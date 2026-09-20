@@ -34,14 +34,17 @@ Monate später, zu welcher Story ein Commit gehörte.
 einen Pull Request hinein.
 
 ```mermaid
-gitGraph
-   commit
-   branch feat/LAB-42-gang-schieben
-   commit
-   commit
-   checkout main
-   merge feat/LAB-42-gang-schieben
-   commit
+flowchart LR
+  A[main aktuell holen] --> B[Branch anlegen]
+  B --> C[committen]
+  C --> D[pushen]
+  D --> E[Pull Request]
+  E --> F{CI grün?}
+  F -- nein --> C
+  F -- ja --> G[Review]
+  G -- Änderungen --> C
+  G -- freigegeben --> H[Squash-Merge in main]
+  H --> I[Branch löschen]
 ```
 
 ## Der Ablauf
