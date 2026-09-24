@@ -115,14 +115,19 @@ gh pr create
 
 Das `-u` nur beim ersten Push eines Branches.
 
-PR-Titel beginnt mit dem Jira-Key:
+Der **PR-Titel folgt demselben Format wie eine Commit-Nachricht**:
 
 ```
-LAB-42: Gang-Schieben am Server validieren
+feat(LAB-42): validate tile push on server
 ```
 
-Im PR-Text kurz beschreiben, **was** geändert wurde und **warum**. Das Ticket
-selbst wird in Jira geschlossen, nicht über GitHub.
+Der Grund: Beim Squash-Merge wird der PR-Titel zum einzigen Commit, der auf
+`main` landet. Die einzelnen Commits des Branches stehen nur noch klein
+darunter. Hält sich der Titel nicht an das Format, hält sich `main` auch nicht
+daran.
+
+Den PR-Text gibt die Vorlage vor: kurz **was** geändert wurde und **warum**.
+Das Ticket selbst wird in Jira geschlossen, nicht über GitHub.
 
 Mit dem PR startet die CI-Pipeline.
 
@@ -143,10 +148,10 @@ flowchart LR
 - Zuständigkeiten stehen in `.github/CODEOWNERS` und werden automatisch
   angefragt.
 - Niemand mergt seinen eigenen PR ohne fremde Freigabe.
-- **Squash-Merge**: alle Commits des Branches werden zu einem zusammengefasst.
-  `main` bleibt dadurch linear und lesbar — ein Commit pro abgeschlossener
-  Aufgabe.
-- Branch nach dem Merge löschen (GitHub bietet das direkt an).
+- **Squash-Merge**: alle Commits des Branches werden zu einem zusammengefasst,
+  benannt nach dem PR-Titel. `main` bleibt dadurch linear und lesbar — ein
+  Commit pro abgeschlossener Aufgabe. Andere Merge-Arten sind abgeschaltet.
+- Der Branch wird nach dem Merge automatisch gelöscht.
 
 Ein Review ist kein Misstrauensvotum. Es ist die billigste Stelle, an der ein
 Fehler noch auffallen kann.
