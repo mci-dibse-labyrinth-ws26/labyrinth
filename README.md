@@ -15,25 +15,46 @@ Advanced Integrative Project, Master Digital Business & Software Engineering, MC
 | `client-desktop` | Desktop-Client (JavaFX) |
 | `docs` | Pflichtenheft, Testplan, Anleitungen, Architekturentscheidungen |
 
-## Loslegen
+## Schnellstart
 
-Voraussetzungen sind nur **Git** und **IntelliJ IDEA**. Gradle und das passende
-JDK 21 holt sich das Projekt selbst. Die Schritt-für-Schritt-Anleitung steht in
+Du brauchst nur **Git** und **IntelliJ IDEA**. Gradle und Java 21 holt sich das
+Projekt selbst.
+
+1. In IntelliJ **Clone Repository** wählen und diese URL eintragen:
+   `https://github.com/mci-dibse-labyrinth-ws26/labyrinth.git`
+2. **Load Gradle Project** bestätigen. Fragt IntelliJ nach einem JDK, dort
+   **Version 21, Eclipse Temurin** auswählen und herunterladen lassen.
+3. Im Gradle-Fenster rechts `labyrinth → Tasks → build → build` ausführen.
+   Ergebnis: **BUILD SUCCESSFUL**.
+
+Die ausführliche Anleitung mit Git-Einrichtung, macOS-Hinweisen und Lösungen
+für häufige Probleme steht in
 [`docs/entwicklungsumgebung.md`](docs/entwicklungsumgebung.md).
 
-## Build
+## Bauen und starten
 
-    ./gradlew build
+Im IntelliJ-Terminal (unter macOS/Linux `./gradlew` statt `.\gradlew.bat`):
 
-Unter Windows: `.\gradlew.bat build`
+| Was | Befehl |
+|---|---|
+| Alles bauen und testen | `.\gradlew.bat build` |
+| Nur die Tests | `.\gradlew.bat test` |
+| Spielserver starten | `.\gradlew.bat :server:run` |
+| Verzeichnisserver starten | `.\gradlew.bat :directory-server:run` |
+| Desktop-Client starten | `.\gradlew.bat :client-desktop:run` |
 
-Weitere Befehle (Server und Client starten, nur Tests) stehen in der Anleitung.
+## Mitarbeiten
+
+Jede Änderung läuft über einen eigenen Branch und einen Pull Request mit
+Review. Branch-Namen, Commit-Format und Ablauf stehen in
+[`CONTRIBUTING.md`](CONTRIBUTING.md). Aufgaben verwalten wir in Jira, nicht in
+GitHub.
 
 ## Dokumentation
 
 | Dokument | Inhalt |
 |---|---|
-| [`docs/entwicklungsumgebung.md`](docs/entwicklungsumgebung.md) | Rechner einrichten, Projekt bauen und starten |
+| [`docs/entwicklungsumgebung.md`](docs/entwicklungsumgebung.md) | Rechner einrichten, Projekt bauen und starten, Code richtig ablegen |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Branches, Commits, Pull Requests, Reviews |
 | [`docs/devops.md`](docs/devops.md) | Betriebshandbuch: Repository, Build, Pipeline, Releases |
 | [`docs/adr/`](docs/adr/README.md) | Architekturentscheidungen mit Begründung |
