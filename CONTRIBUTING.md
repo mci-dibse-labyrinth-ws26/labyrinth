@@ -11,7 +11,8 @@ Welche IDE oder welchen Editor du benutzt, ist deine Sache. Das Projekt baut
 über die Kommandozeile, Formatierung regelt `.editorconfig`, und IDE-Ordner
 stehen in `.gitignore`.
 
-Was du brauchst: Git und eine lokale Java-Umgebung.
+Was du brauchst und wie du deinen Rechner einrichtest, steht in
+[`docs/entwicklungsumgebung.md`](docs/entwicklungsumgebung.md).
 
 ## Wo was liegt
 

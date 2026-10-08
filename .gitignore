@@ -1,9 +1,6 @@
 # Compiled class file
 *.class
 
-# Log file
-*.log
-
 # BlueJ files
 *.ctxt
 
@@ -27,6 +24,7 @@ replay_pid*
 .gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
+.kotlin/
 
 # IDEs
 .idea/
@@ -37,6 +35,8 @@ build/
 .project
 .classpath
 nbproject/
+out/
+bin/
 
 # Betriebssystem
 .DS_Store
