@@ -13,18 +13,30 @@ Advanced Integrative Project, Master Digital Business & Software Engineering, MC
 | `server` | Spielserver |
 | `directory-server` | Verzeichnisserver |
 | `client-desktop` | Desktop-Client (JavaFX) |
-| `docs` | Pflichtenheft, Testplan, Protokolle |
+| `docs` | Pflichtenheft, Testplan, Anleitungen, Architekturentscheidungen |
 
-## Voraussetzungen
+## Loslegen
 
-- JDK 21
-- Git
+Voraussetzungen sind nur **Git** und **IntelliJ IDEA**. Gradle und das passende
+JDK 21 holt sich das Projekt selbst. Die Schritt-für-Schritt-Anleitung steht in
+[`docs/entwicklungsumgebung.md`](docs/entwicklungsumgebung.md).
 
 ## Build
 
     ./gradlew build
 
-Unter Windows: `gradlew.bat build`
+Unter Windows: `.\gradlew.bat build`
+
+Weitere Befehle (Server und Client starten, nur Tests) stehen in der Anleitung.
+
+## Dokumentation
+
+| Dokument | Inhalt |
+|---|---|
+| [`docs/entwicklungsumgebung.md`](docs/entwicklungsumgebung.md) | Rechner einrichten, Projekt bauen und starten |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Branches, Commits, Pull Requests, Reviews |
+| [`docs/devops.md`](docs/devops.md) | Betriebshandbuch: Repository, Build, Pipeline, Releases |
+| [`docs/adr/`](docs/adr/README.md) | Architekturentscheidungen mit Begründung |
 
 ## Hinweis
 
