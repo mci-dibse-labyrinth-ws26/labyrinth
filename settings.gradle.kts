@@ -14,6 +14,5 @@ include(
     "protocol",
     "core",
     "server",
-    "directory-server",
     "client-desktop",
 )

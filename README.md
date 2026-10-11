@@ -11,9 +11,10 @@ Advanced Integrative Project, Master Digital Business & Software Engineering, MC
 | `protocol` | Nachrichtenklassen und JSON-Serialisierung |
 | `core` | Domänenmodell und Spielregeln |
 | `server` | Spielserver |
-| `directory-server` | Verzeichnisserver |
 | `client-desktop` | Desktop-Client (JavaFX) |
 | `docs` | Pflichtenheft, Testplan, Anleitungen, Architekturentscheidungen |
+
+Den Verzeichnisserver (Liste der laufenden Spielserver) bauen wir nicht selbst: Es gibt einen gemeinsamen für alle Gruppen. Unser Server meldet sich dort an, unser Client fragt dort die Liste ab ([ADR 0005](docs/adr/0005-kein-eigener-verzeichnisserver.md)).
 
 ## Schnellstart
 
@@ -40,7 +41,6 @@ Im IntelliJ-Terminal (unter macOS/Linux `./gradlew` statt `.\gradlew.bat`):
 | Alles bauen und testen | `.\gradlew.bat build` |
 | Nur die Tests | `.\gradlew.bat test` |
 | Spielserver starten | `.\gradlew.bat :server:run` |
-| Verzeichnisserver starten | `.\gradlew.bat :directory-server:run` |
 | Desktop-Client starten | `.\gradlew.bat :client-desktop:run` |
 
 ## Mitarbeiten

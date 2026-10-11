@@ -1,6 +1,6 @@
 # 0002. Ein Repository mit Modulen
 
-- Status: angenommen
+- Status: angenommen, teilweise ersetzt durch [0005](0005-kein-eigener-verzeichnisserver.md) (kein Modul `directory-server`)
 - Datum: 30.09.2026
 - Entschieden von: Gruppe (Vorschlag der Technikverantwortung)
 

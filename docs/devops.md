@@ -107,7 +107,7 @@ Platzhalter.
 | Java | **21**, über die Gradle-Toolchain ([ADR 0004](adr/0004-jdk-21-temurin.md)) |
 | Tests | JUnit **6** (Jupiter) |
 | Oberfläche | JavaFX **21** |
-| Struktur | ein Repository, fünf Module ([ADR 0002](adr/0002-ein-repository-mit-modulen.md)) |
+| Struktur | ein Repository, vier Module ([ADR 0002](adr/0002-ein-repository-mit-modulen.md), [ADR 0005](adr/0005-kein-eigener-verzeichnisserver.md)) |
 
 Kernidee: **Niemand muss Gradle oder ein bestimmtes Java installieren**, und
 alle bauen trotzdem mit denselben Versionen, lokal wie in der Pipeline.
@@ -126,7 +126,7 @@ labyrinth/
 │   ├── settings.gradle.kts         macht den Versionskatalog in buildSrc verfügbar
 │   └── src/main/kotlin/
 │       └── labyrinth.java-conventions.gradle.kts
-├── protocol/   core/   server/   directory-server/   client-desktop/
+├── protocol/   core/   server/   client-desktop/
 │   ├── build.gradle.kts            je Modul: was es ist und was es benutzt
 │   └── src/main/java, src/test/java
 └── docs/
@@ -161,7 +161,6 @@ flowchart TD
   client --> protocol
   server --> core
   server --> protocol
-  directory[directory-server] --> protocol
 ```
 
 | Modul | Art | Inhalt |
@@ -169,8 +168,9 @@ flowchart TD
 | `protocol` | Bibliothek | Nachrichtenklassen und JSON-Serialisierung |
 | `core` | Bibliothek | Spielmodell und Spielregeln |
 | `server` | Anwendung | Spielserver |
-| `directory-server` | Anwendung | Verzeichnisserver |
 | `client-desktop` | Anwendung | JavaFX-Client mit KI |
+
+Der **Verzeichnisserver** ist kein Modul: Alle Gruppen nutzen einen gemeinsamen, der außerhalb dieses Repositories entsteht ([ADR 0005](adr/0005-kein-eigener-verzeichnisserver.md)). `server` meldet sich dort an, `client-desktop` holt dort die Serverliste; die dafür nötigen Nachrichten gehören in `protocol`.
 
 Regeln:
 
@@ -308,7 +308,6 @@ Version 21: JavaFX 25 und neuer benötigen ein neueres JDK als 21.
 | `.\gradlew.bat build` | alles kompilieren, testen, paketieren |
 | `.\gradlew.bat test` | nur Tests |
 | `.\gradlew.bat :server:run` | Spielserver starten |
-| `.\gradlew.bat :directory-server:run` | Verzeichnisserver starten |
 | `.\gradlew.bat :client-desktop:run` | Desktop-Client starten |
 | `.\gradlew.bat clean` | Build-Ergebnisse löschen |
 | `.\gradlew.bat build --warning-mode all` | Build mit allen Hinweisen auf veraltete Funktionen |
@@ -390,3 +389,5 @@ Git-Tag markiert, damit jederzeit nachvollziehbar ist, was abgegeben wurde.
 | 24.09.2026 | PR-Vorlage; PR-Titel im Commit-Format | PR #1 |
 | 30.09.2026 | Gruppenbeschluss: ein Repository mit Modulen, Gradle, JDK 21 | Besprechung, ADR 0002–0004 |
 | 08.10.2026 | Gradle-Grundgerüst: Wrapper 9.8.0, fünf Module, Konventions-Plugin, Versionskatalog, Toolchain Java 21, JUnit 6, JavaFX 21; Einrichtungsanleitung, dieses Handbuch, ADRs 0001–0004 | Branch `chore/gradle-grundgeruest` |
+| 08.10.2026 | README: Schnellstart, Befehle, Abschnitt Mitarbeiten | direkt auf main |
+| 11.10.2026 | Modul `directory-server` entfernt; gemeinsamer Verzeichnisserver für alle Gruppen (ADR 0005) | direkt auf main |

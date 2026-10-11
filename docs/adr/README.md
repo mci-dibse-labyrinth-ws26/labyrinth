@@ -7,9 +7,10 @@ warum wir das tun, steht in [ADR 0001](0001-architekturentscheidungen-festhalten
 | Nr. | Entscheidung | Status | Datum |
 |---|---|---|---|
 | [0001](0001-architekturentscheidungen-festhalten.md) | Architekturentscheidungen als ADRs festhalten | angenommen | 08.10.2026 |
-| [0002](0002-ein-repository-mit-modulen.md) | Ein Repository mit Modulen | angenommen | 30.09.2026 |
+| [0002](0002-ein-repository-mit-modulen.md) | Ein Repository mit Modulen | angenommen, teilweise ersetzt durch 0005 | 30.09.2026 |
 | [0003](0003-gradle-als-build-werkzeug.md) | Gradle als Build-Werkzeug | angenommen | 30.09.2026 |
 | [0004](0004-jdk-21-temurin.md) | JDK 21 (Eclipse Temurin) über die Gradle-Toolchain | angenommen | 30.09.2026 |
+| [0005](0005-kein-eigener-verzeichnisserver.md) | Kein eigener Verzeichnisserver | angenommen | 11.10.2026 |
 
 ## Neue ADR anlegen
 

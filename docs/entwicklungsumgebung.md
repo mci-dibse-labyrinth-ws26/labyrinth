@@ -136,7 +136,6 @@ labyrinth
 ├── buildSrc
 ├── client-desktop
 ├── core
-├── directory-server
 ├── protocol
 └── server
 ```
@@ -149,7 +148,6 @@ labyrinth
 |---|---|
 | Alles bauen und testen | `labyrinth → Tasks → build → build` |
 | Spielserver starten | `server → Tasks → application → run` |
-| Verzeichnisserver starten | `directory-server → Tasks → application → run` |
 | Desktop-Client starten | `client-desktop → Tasks → application → run` |
 
 Erwartet:
@@ -226,16 +224,17 @@ Prüfen in jedem Fall mit einem Build im neuen Terminal:
 
 ## 7. Wo kommt mein Code hin?
 
-Das Projekt besteht aus fünf **Modulen**. Jedes ist ein Unterordner mit eigener
+Das Projekt besteht aus vier **Modulen**. Jedes ist ein Unterordner mit eigener
 Aufgabe:
 
 | Modul | Inhalt | darf benutzen |
 |---|---|---|
-| `protocol` | Nachrichten zwischen Client und Server und ihre JSON-Umwandlung | – |
+| `protocol` | Nachrichten zwischen Client, Server und dem gemeinsamen Verzeichnisserver, und ihre JSON-Umwandlung | – |
 | `core` | Spielmodell und Spielregeln | – |
 | `server` | Spielserver | `protocol`, `core` |
-| `directory-server` | Verzeichnisserver (Liste der laufenden Spielserver) | `protocol` |
 | `client-desktop` | JavaFX-Oberfläche und KI | `protocol`, `core` |
+
+Einen eigenen Verzeichnisserver gibt es nicht: Alle Gruppen nutzen einen gemeinsamen, den nicht wir bauen. Unser Server meldet sich dort an, unser Client holt dort die Serverliste.
 
 Die rechte Spalte erzwingt der Build: Was dort nicht steht, ist für das Modul
 unsichtbar und führt zu einem Kompilierfehler. Das schränkt nicht ein, **wer**
