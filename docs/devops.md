@@ -391,3 +391,4 @@ Git-Tag markiert, damit jederzeit nachvollziehbar ist, was abgegeben wurde.
 | 08.10.2026 | Gradle-Grundgerüst: Wrapper 9.8.0, fünf Module, Konventions-Plugin, Versionskatalog, Toolchain Java 21, JUnit 6, JavaFX 21; Einrichtungsanleitung, dieses Handbuch, ADRs 0001–0004 | Branch `chore/gradle-grundgeruest` |
 | 08.10.2026 | README: Schnellstart, Befehle, Abschnitt Mitarbeiten | direkt auf main |
 | 11.10.2026 | Modul `directory-server` entfernt; gemeinsamer Verzeichnisserver für alle Gruppen (ADR 0005) | direkt auf main |
+
