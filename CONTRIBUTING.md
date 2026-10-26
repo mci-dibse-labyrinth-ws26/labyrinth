@@ -24,7 +24,7 @@ Was du brauchst und wie du deinen Rechner einrichtest, steht in
 Es gibt genau **einen** Tracker, und das ist Jira. GitHub Issues sind
 abgeschaltet.
 
-Verbunden werden beide Systeme über den **Jira-Key** (z. B. `LAB-42`). Er gehört
+Verbunden werden beide Systeme über den **Jira-Key** (z. B. `AIP6-42`). Er gehört
 in jeden Branch-Namen und jede Commit-Nachricht. Dadurch erscheint die Arbeit
 automatisch im zugehörigen Ticket, und man erkennt in der Git-Historie noch
 Monate später, zu welcher Story ein Commit gehörte.
@@ -63,7 +63,7 @@ vermeidbare Konflikte.
 ### 2. Branch anlegen
 
 ```bash
-git switch -c feat/LAB-42-gang-schieben
+git switch -c feat/AIP6-42-gang-schieben
 ```
 
 Schema: `<typ>/<JIRA-KEY>-<kurzbeschreibung>`
@@ -95,14 +95,14 @@ Commit-Nachrichten folgen **Conventional Commits** mit dem Jira-Key als Scope:
 ```
 
 ```
-feat(LAB-42): add push validation for fixed tiles
-fix(LAB-57): prevent two figures on the same field after push
-docs(LAB-13): describe bonus rules in pflichtenheft
+feat(AIP6-42): add push validation for fixed tiles
+fix(AIP6-57): prevent two figures on the same field after push
+docs(AIP6-13): describe bonus rules in pflichtenheft
 chore: bump junit to 5.10.1
 ```
 
 Sprache: **Englisch**. Alle Commits zu einer Story findest du später mit
-`git log --grep=LAB-42`.
+`git log --grep=AIP6-42`.
 
 Lieber mehrere kleine Commits mit klarer Aussage als ein großer Sammel-Commit.
 Ein Commit sollte eine Sache tun.
@@ -110,7 +110,7 @@ Ein Commit sollte eine Sache tun.
 ### 4. Hochladen und Pull Request
 
 ```bash
-git push -u origin feat/LAB-42-gang-schieben
+git push -u origin feat/AIP6-42-gang-schieben
 gh pr create
 ```
 
@@ -119,7 +119,7 @@ Das `-u` nur beim ersten Push eines Branches.
 Der **PR-Titel folgt demselben Format wie eine Commit-Nachricht**:
 
 ```
-feat(LAB-42): validate tile push on server
+feat(AIP6-42): validate tile push on server
 ```
 
 Der Grund: Beim Squash-Merge wird der PR-Titel zum einzigen Commit, der auf

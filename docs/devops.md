@@ -32,6 +32,7 @@ hier nachgetragen, Abschnitt 8 hält sie chronologisch fest.
 | Owner | Technikverantwortung |
 | Team `entwickler` | alle Gruppenmitglieder, Recht **Write** auf `labyrinth` |
 | Third-party access | eingeschränkt; freigegeben ist die JetBrains-App (IntelliJ) |
+| GitHub-Apps | „GitHub for Atlassian“ (Jira), Zugriff nur auf `labyrinth` (Abschnitt 3.1) |
 
 **Warum eine Organisation?** Das Repository gehört nicht einer Person. Rechte
 werden einmal über das Team vergeben statt pro Person.
@@ -93,8 +94,35 @@ flowchart LR
   einzigen Commit auf `main`.
 - Doku wird im selben Pull Request angepasst wie der Code.
 
-Der Jira-Projekt-Key ist noch nicht festgelegt; bis dahin steht `LAB` als
-Platzhalter.
+### 3.1 Jira-Anbindung
+
+Aufgaben liegen in Jira, Code in GitHub. Verknüpft sind beide über die App
+**„GitHub for Atlassian“** ([ADR 0006](adr/0006-jira-ueber-ticket-key-verknuepfen.md)).
+
+| Was | Wert |
+|---|---|
+| Jira-Projekt-Key | **`AIP6`** (Tickets `AIP6-1`, `AIP6-2`, …) |
+| Verbindung | App „GitHub for Atlassian“ in Jira, Organisation `mci-dibse-labyrinth-ws26` |
+| Repository-Zugriff der App | nur `labyrinth` („Only select repositories“) |
+| Smart Commits | **nicht genutzt** |
+| Eingerichtet | 25.10.2026 |
+
+**So funktioniert die Verknüpfung:** Steht ein Ticket-Key im Branch-Namen, in
+einer Commit-Nachricht oder im PR-Titel, zeigt Jira Branch, Commit und Pull
+Request im Ticket rechts unter **„Development“**. Der Key muss genau so
+geschrieben sein wie in Jira: Großbuchstaben, Bindestrich, Nummer.
+
+**Smart Commits** (Tickets per Commit-Nachricht verschieben oder kommentieren)
+nutzen wir nicht. Den Status eines Tickets ändert man in Jira.
+
+**Wer kann die Verbindung ändern?** Dafür braucht es beide Seiten: Admin-Rechte
+in Jira und Owner-Rechte in der GitHub-Organisation. Die Einstellungen der App
+auf GitHub-Seite liegen unter *Organization Settings → GitHub Apps → GitHub for
+Atlassian → Configure*.
+
+**Wenn im Ticket nichts erscheint:** Key prüfen (Schreibweise), ein paar
+Minuten warten, in Jira unter *Apps → GitHub* nachsehen, ob die Synchronisierung
+noch läuft.
 
 ## 4. Build
 
@@ -391,4 +419,5 @@ Git-Tag markiert, damit jederzeit nachvollziehbar ist, was abgegeben wurde.
 | 08.10.2026 | Gradle-Grundgerüst: Wrapper 9.8.0, fünf Module, Konventions-Plugin, Versionskatalog, Toolchain Java 21, JUnit 6, JavaFX 21; Einrichtungsanleitung, dieses Handbuch, ADRs 0001–0004 | Branch `chore/gradle-grundgeruest` |
 | 08.10.2026 | README: Schnellstart, Befehle, Abschnitt Mitarbeiten | direkt auf main |
 | 11.10.2026 | Modul `directory-server` entfernt; gemeinsamer Verzeichnisserver für alle Gruppen (ADR 0005) | direkt auf main |
+| 25.10.2026 | Jira über „GitHub for Atlassian“ angebunden, Projekt-Key `AIP6`, keine Smart Commits (Abschnitt 3.1, ADR 0006); Platzhalter `LAB` in `CONTRIBUTING.md` und PR-Vorlage ersetzt | Jira-/GitHub-Oberfläche, Branches `AIP6-9-JIRA-TEST` (Test) und `docs/AIP6-9-jira-doku` |
 
