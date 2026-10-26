@@ -1,0 +1,35 @@
+# Baut und testet das Projekt bei jedem Pull Request und jedem Push auf main.
+# Beschreibung und Begründung: docs/devops.md (Abschnitt 5), ADR 0007.
+name: Build
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v7
+
+      - name: Java 21 (Temurin) einrichten
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Gradle einrichten
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+
+      - name: Bauen und testen
+        run: ./gradlew build

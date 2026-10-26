@@ -380,10 +380,112 @@ Danach einmal bauen und alle geänderten Dateien unter `gradle/wrapper/` sowie
 
 ## 5. Pipeline
 
-*Geplant.* GitHub Actions baut und testet jeden Push und jeden Pull Request auf
-einem Linux-Rechner (`.github/workflows/build.yml`). Damit läuft der Build
-regelmäßig auf drei Betriebssystemen: Windows und macOS im Team, Linux in der
-Pipeline.
+GitHub Actions baut und testet das Projekt automatisch auf einem frischen
+Linux-Rechner ([ADR 0007](adr/0007-ci-mit-github-actions.md)). Damit läuft der
+Build regelmäßig auf drei Betriebssystemen: Windows und macOS im Team, Linux in
+der Pipeline.
+
+### 5.1 Überblick
+
+| Was | Wert |
+|---|---|
+| Datei | `.github/workflows/build.yml` |
+| Dienst | GitHub Actions mit von GitHub bereitgestellten Rechnern (für öffentliche Repositories kostenlos) |
+| Rechner | `ubuntu-latest`, für jeden Lauf neu aufgesetzt und danach gelöscht |
+| Java | 21, Eclipse Temurin ([ADR 0004](adr/0004-jdk-21-temurin.md)) |
+| Befehl | `./gradlew build`: kompilieren, alle Tests, paketieren |
+| Name der Prüfung | `build` (wird im Branch-Schutz die Pflicht-Prüfung, Abschnitt 6) |
+| Zeitlimit | 15 Minuten |
+| Eingerichtet | 26.10.2026 |
+
+### 5.2 Wann sie läuft
+
+| Auslöser | Wann |
+|---|---|
+| `pull_request` | beim Öffnen eines Pull Requests und bei jedem weiteren Push auf dessen Branch |
+| `push` auf `main` | nach jedem Merge, und bei direkten Pushes, solange `main` nicht geschützt ist |
+| `workflow_dispatch` | von Hand: Tab *Actions* → *Build* → *Run workflow* |
+
+Bei einem Pull Request baut die Pipeline nicht den Branch allein, sondern das
+Ergebnis nach dem Merge: Branch plus aktueller Stand von `main`. Grün heißt
+also: So, wie es jetzt ist, würde `main` nach dem Merge bauen.
+
+Branches ohne Pull Request baut die Pipeline nicht. Sie können `main` nicht
+erreichen, und so wird jede Änderung genau einmal gebaut statt doppelt.
+
+**Tipp:** Wer früh Rückmeldung will, öffnet den Pull Request gleich als
+Entwurf (*Create draft pull request*). Die Pipeline läuft dann bei jedem Push;
+um ein Review wird erst mit *Ready for review* gebeten.
+
+### 5.3 Ablauf
+
+| Schritt | Was passiert |
+|---|---|
+| Code auschecken | `actions/checkout` holt den zu prüfenden Stand |
+| Java 21 (Temurin) einrichten | `actions/setup-java` installiert das JDK. Gradle findet es auch für die Toolchain, ein Download über foojay entfällt |
+| Gradle einrichten | `gradle/actions/setup-gradle` stellt den Cache wieder her (5.4) und prüft den Gradle Wrapper (5.5) |
+| Bauen und testen | `./gradlew build`, derselbe Befehl wie lokal |
+
+Lokal gilt weiterhin: **Vor jedem Commit muss der lokale Build grün sein**
+([`CONTRIBUTING.md`](../CONTRIBUTING.md)). Die Pipeline ist die zweite
+Sicherung, nicht die erste.
+
+### 5.4 Cache
+
+`setup-gradle` speichert die Gradle-Distribution und heruntergeladene
+Bibliotheken zwischen den Läufen im Cache von GitHub Actions. Eingestellt ist
+`cache-provider: basic`, die quelloffene Variante (MIT-Lizenz). Die
+Standardvariante „enhanced“ ist eine proprietäre Komponente von Gradle mit
+eigenen Nutzungsbedingungen ([ADR 0007](adr/0007-ci-mit-github-actions.md)).
+
+- In den Cache schreiben nur Läufe auf `main`. Pull Requests lesen ihn nur.
+- Der Schlüssel ergibt sich aus den Build-Dateien (`*.gradle.kts`,
+  `gradle-wrapper.properties`, `libs.versions.toml`). Ändert sich eine davon,
+  startet der nächste Lauf ohne Cache und lädt alles einmal neu.
+
+### 5.5 Sicherheit
+
+- **Rechte:** `permissions: contents: read`. Das automatische Zugangs-Token der
+  Pipeline darf das Repository nur lesen.
+- **Wrapper-Prüfung:** `setup-gradle` vergleicht `gradle-wrapper.jar` mit den
+  offiziellen Prüfsummen von Gradle. Eine veränderte Datei lässt den Lauf
+  scheitern, bevor der Build startet.
+- **Keine Geheimnisse:** Die Pipeline braucht keine Zugangsdaten, es sind keine
+  *Secrets* hinterlegt.
+
+### 5.6 Wenn die Pipeline rot ist
+
+1. Im Pull Request bei den Prüfungen auf **Details** klicken. Der
+   fehlgeschlagene Schritt ist aufgeklappt, die Fehlermeldung steht meist am
+   Ende.
+2. Den Fehler lokal nachstellen: `.\gradlew.bat build`. Häufigste Ursachen
+   sind Kompilierfehler und fehlgeschlagene Tests.
+3. Korrigieren, committen, pushen. Die Pipeline läuft automatisch erneut.
+4. Baut es lokal, aber nicht in der Pipeline, liegt es meist am
+   Betriebssystem: Groß- und Kleinschreibung in Dateinamen (Linux
+   unterscheidet sie, Windows nicht), Pfadtrenner, Zeilenenden. Bei einem
+   vermutlich zufälligen Fehler hilft **Re-run jobs**.
+
+### 5.7 Wartung
+
+| Action | Version | Zweck |
+|---|---|---|
+| `actions/checkout` | v7 | Code holen |
+| `actions/setup-java` | v5 | JDK installieren |
+| `gradle/actions/setup-gradle` | v6 | Cache, Wrapper-Prüfung, Zusammenfassung des Laufs |
+
+- Die Actions sind über ihre Hauptversion eingebunden (`@v7`). Fehlerkorrekturen
+  kommen damit automatisch, brechende Änderungen nicht. Eine neue
+  Hauptversion wird von Hand eingetragen und in Abschnitt 8 vermerkt.
+- Der Job heißt `build`. Unter diesem Namen wird er die Pflicht-Prüfung im
+  Branch-Schutz; wer ihn umbenennt, muss den Branch-Schutz anpassen.
+
+### 5.8 Geplante Erweiterungen
+
+- Testberichte und Testabdeckung (JaCoCo) als Ergebnis jedes Laufs, zusammen
+  mit dem Testplan.
+- Pipeline als Pflicht-Prüfung im Branch-Schutz (Abschnitt 6).
+- Releases bei Abgabe-Tags (Abschnitt 7).
 
 ## 6. Branch-Schutz
 
@@ -420,4 +522,5 @@ Git-Tag markiert, damit jederzeit nachvollziehbar ist, was abgegeben wurde.
 | 08.10.2026 | README: Schnellstart, Befehle, Abschnitt Mitarbeiten | direkt auf main |
 | 11.10.2026 | Modul `directory-server` entfernt; gemeinsamer Verzeichnisserver für alle Gruppen (ADR 0005) | direkt auf main |
 | 25.10.2026 | Jira über „GitHub for Atlassian“ angebunden, Projekt-Key `AIP6`, keine Smart Commits (Abschnitt 3.1, ADR 0006); Platzhalter `LAB` in `CONTRIBUTING.md` und PR-Vorlage ersetzt | Jira-/GitHub-Oberfläche, Branches `AIP6-9-JIRA-TEST` (Test) und `docs/AIP6-9-jira-doku` |
+| 26.10.2026 | CI-Pipeline mit GitHub Actions: Build und Tests bei jedem Pull Request und jedem Push auf `main`, Java 21 (Temurin), Gradle-Cache „basic“, Wrapper-Prüfung (Abschnitt 5, ADR 0007) | Branch `chore/AIP6-7-ci-pipeline` |
 
