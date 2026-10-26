@@ -11,6 +11,7 @@ warum wir das tun, steht in [ADR 0001](0001-architekturentscheidungen-festhalten
 | [0003](0003-gradle-als-build-werkzeug.md) | Gradle als Build-Werkzeug | angenommen | 30.09.2026 |
 | [0004](0004-jdk-21-temurin.md) | JDK 21 (Eclipse Temurin) über die Gradle-Toolchain | angenommen | 30.09.2026 |
 | [0005](0005-kein-eigener-verzeichnisserver.md) | Kein eigener Verzeichnisserver | angenommen | 11.10.2026 |
+| [0006](0006-jira-ueber-ticket-key-verknuepfen.md) | Jira und GitHub über den Ticket-Key verknüpfen | angenommen | 25.10.2026 |
 
 ## Neue ADR anlegen
 
