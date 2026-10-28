@@ -16,7 +16,12 @@ Jira: AIP6-
 
 ## Checkliste
 
+<!-- Definition of Done (Pflichtenheft 12.1, CONTRIBUTING.md).
+Review und grüne Pipeline sind vor dem Merge Pflicht. -->
+
 - [ ] Titel im Format `<typ>(<JIRA-KEY>): …`
-- [ ] Lokal gebaut, Tests grün
-- [ ] Tests für neue Logik ergänzt
+- [ ] Lokal gebaut (`gradlew build`), Tests grün
+- [ ] Tests für neue Logik, mit Anforderungs-ID (`@Tag("F-…")`)
+- [ ] Javadoc für neue öffentliche Klassen und Methoden, auf Englisch
+- [ ] Anforderungs-ID im Jira-Ticket verknüpft
 - [ ] Doku angepasst, falls nötig

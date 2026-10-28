@@ -1,14 +1,11 @@
 package edu.mci.labyrinth.protocol;
 
 /**
- * Version des Kommunikationsprotokolls zwischen Client und Server.
- *
- * <p>Platzhalter aus dem Projektgerüst. Wird ersetzt, sobald das Protokoll
- * gruppenübergreifend festgelegt ist.
+ * Version of the communication protocol between client and server.
  */
 public final class ProtocolVersion {
 
-    /** Aktuelle Protokollversion. */
+    /** Current protocol version. */
     public static final String CURRENT = "0.1.0";
 
     private ProtocolVersion() {

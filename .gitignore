@@ -45,3 +45,5 @@ Thumbs.db
 # Logs und lokale Konfiguration
 *.log
 local.properties
+logs/
+server.properties

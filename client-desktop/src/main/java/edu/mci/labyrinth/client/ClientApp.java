@@ -9,14 +9,21 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 /**
- * Startpunkt des Desktop-Clients.
- *
- * <p>Platzhalter aus dem Projektgerüst. Öffnet ein leeres Fenster und zeigt,
- * dass der Client JavaFX sowie die Module {@code protocol} und {@code core}
- * benutzen kann.
+ * Entry point of the desktop client.
  */
 public class ClientApp extends Application {
 
+    /**
+     * Creates the client application. Called by the JavaFX launcher.
+     */
+    public ClientApp() {
+    }
+
+    /**
+     * Starts the desktop client.
+     *
+     * @param args command line arguments, passed on to JavaFX
+     */
     public static void main(String[] args) {
         launch(args);
     }
@@ -30,6 +37,6 @@ public class ClientApp extends Application {
 
     static String statusText() {
         return "Labyrinth-Client (Protokoll " + ProtocolVersion.CURRENT
-                + ", Spielbrett " + Board.SIZE + "x" + Board.SIZE + ")";
+                + ", Spielbrett " + Board.DEFAULT_SIZE + "x" + Board.DEFAULT_SIZE + ")";
     }
 }

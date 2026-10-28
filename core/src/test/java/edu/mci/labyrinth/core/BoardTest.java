@@ -8,6 +8,6 @@ class BoardTest {
 
     @Test
     void boardHasSevenBySevenFields() {
-        assertEquals(7, Board.SIZE);
+        assertEquals(7, Board.DEFAULT_SIZE);
     }
 }

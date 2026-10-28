@@ -79,6 +79,11 @@ Schema: `<typ>/<JIRA-KEY>-<kurzbeschreibung>`
 
 Key groß, Kurzbeschreibung klein, Wörter mit Bindestrich, keine Umlaute.
 
+**Branch aus Jira anlegen:** Im Ticket rechts unter *Development* gibt es
+*Create branch*. Jira schlägt einen Namen aus Key und Ticket-Titel vor
+(`AIP6-42-…`). Davor den Typ setzen und den Rest auf eine kurze Beschreibung
+kürzen, ohne Umlaute: `feat/AIP6-42-gang-schieben`.
+
 Gibt es noch kein Ticket, leg vorher eins an. Für Kleinkram ohne eigenes Ticket
 (Tippfehler, Aufräumen im Build) darf der Key entfallen:
 `chore/gitignore-aufraeumen`. Das bleibt die Ausnahme.
@@ -157,6 +162,72 @@ flowchart LR
 Ein Review ist kein Misstrauensvotum. Es ist die billigste Stelle, an der ein
 Fehler noch auffallen kann.
 
+## Code, Javadoc und Tests
+
+Diese Regeln stehen im Pflichtenheft (NF-09, NF-13, 12.1, 12.4).
+
+### Sprache
+
+- **Englisch:** alle Namen im Code (Klassen, Methoden, Variablen, Tests),
+  Javadoc, Commit-Nachrichten, PR-Titel.
+- **Deutsch:** Texte in der Oberfläche und die Doku in `docs/`.
+- Keine Platzhalter-Kommentare und keine Emojis im Code.
+
+### Javadoc
+
+Jede öffentliche Klasse und Methode hat Javadoc, mit `@param` für jeden
+Parameter und `@return` für den Rückgabewert. Fehlt etwas, scheitert
+`build`, lokal wie in der Pipeline.
+
+```java
+/**
+ * Checks whether the given row can be moved by a push.
+ *
+ * @param row index of the row, starting at 0
+ * @return {@code true} if the row index is odd
+ */
+public boolean isMovableRow(int row) {
+    return row % 2 == 1;
+}
+```
+
+- Der erste Satz ist die Kurzbeschreibung und endet mit einem Punkt.
+- Keine Javadoc brauchen private und paketinterne Klassen und Methoden,
+  Tests und Methoden mit `@Override` (sie erben die Beschreibung).
+- Klassen, die JavaFX selbst erzeugt (`extends Application`), bekommen einen
+  sichtbaren leeren Konstruktor mit Javadoc. Sonst meldet die Prüfung den
+  unsichtbaren Standardkonstruktor.
+- Setzt der Code eine bestimmte Anforderung oder Annahme um, darf ihre
+  Kennung in der Javadoc stehen, z. B. `(A-01)`. Pflicht ist die Kennung nur
+  in Tests (nächster Abschnitt).
+- Ob die Javadoc englisch ist, prüft der Build nicht. Das gehört ins Review.
+
+### Anforderungs-ID in Tests
+
+Jeder Test, der eine Anforderung aus dem Pflichtenheft prüft, nennt ihre
+Kennung (`F-…`, `NF-…` oder `V-…`), am besten per `@Tag`. So bleibt im
+Testplan nachvollziehbar, welche Tests eine Anforderung abdecken.
+
+```java
+@Test
+@Tag("F-237")
+void recognizesHeadlessOption() {
+    assertTrue(ServerApp.isHeadless(new String[] {"--headless"}));
+}
+```
+
+Das Beispiel stammt aus `ServerAppTest` im Modul `server`. Ein Test darf
+mehrere Tags tragen, etwa `@Tag("V-03")` für eine Prüfung aus dem
+Prüfkatalog. Laut Pflichtenheft geht auch die Kennung im Testnamen; der Tag
+ist eindeutiger und lässt sich beim Ausführen filtern.
+
+### Definition of Done
+
+Eine Aufgabe ist fertig, wenn der Code reviewt ist, Tests vorhanden und grün
+sind, die Javadoc vollständig ist, die Pipeline grün ist und die
+Anforderungs-ID im Ticket verknüpft ist. Dokumente prüft zusätzlich das
+Qualitätsmanagement. Die Checkliste der PR-Vorlage fragt das ab.
+
 ## Was nicht erlaubt ist
 
 - **Kein direkter Push auf `main`.** Der Branch ist geschützt; der Versuch
@@ -202,3 +273,8 @@ pushen. Das ist Absicht. Leg einen Branch an.
 
 **PR zeigt hunderte geänderte Zeilen, obwohl du kaum etwas geändert hast** —
 Zeilenenden. `git config --global core.autocrlf` prüfen.
+
+**Build scheitert bei `:<modul>:javadoc` mit „no comment“ bzw. „kein
+Kommentar“** — einer öffentlichen Klasse oder Methode fehlt die Javadoc oder
+ein `@param`/`@return`. Datei und Zeile stehen in der Meldung. Mit
+`.\gradlew.bat build --continue` siehst du die Fehler aller Module auf einmal.

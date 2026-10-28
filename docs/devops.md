@@ -64,10 +64,10 @@ Dazu kommen Dateien im Repository, die für alle gleich gelten:
 
 | Datei | Zweck |
 |---|---|
-| `.gitignore` | Build-Ergebnisse, IDE-Ordner, lokale Konfiguration bleiben draußen |
+| `.gitignore` | Build-Ergebnisse, IDE-Ordner, Spielprotokolle (`logs/`) und lokale Konfiguration (`server.properties`) bleiben draußen |
 | `.gitattributes` | Zeilenenden: LF im Repository, CRLF nur für Windows-Skripte (`*.bat`) |
 | `.editorconfig` | UTF-8, LF, 4 Leerzeichen (Markdown/YAML/JSON: 2), unabhängig von der IDE |
-| `.github/pull_request_template.md` | Vorlage für jeden Pull Request: Was, Warum, Jira, Checkliste |
+| `.github/pull_request_template.md` | Vorlage für jeden Pull Request: Was, Warum, Jira, Checkliste nach der Definition of Done |
 
 ## 3. Arbeitsablauf
 
@@ -132,9 +132,11 @@ noch läuft.
 |---|---|
 | Build-Werkzeug | Gradle **9.8.0**, über den Wrapper ([ADR 0003](adr/0003-gradle-als-build-werkzeug.md)) |
 | Build-Skripte | Kotlin-DSL (`*.gradle.kts`) |
+| Projektversion | **0.1.0** nach Semantic Versioning, in `gradle.properties` (4.6) |
 | Java | **21**, über die Gradle-Toolchain ([ADR 0004](adr/0004-jdk-21-temurin.md)) |
 | Tests | JUnit **6** (Jupiter) |
-| Oberfläche | JavaFX **21** |
+| Javadoc | Pflicht für öffentliche Klassen und Methoden, geprüft bei jedem `build` (4.9) |
+| Oberfläche | JavaFX **21**, in Server und Client |
 | Struktur | ein Repository, vier Module ([ADR 0002](adr/0002-ein-repository-mit-modulen.md), [ADR 0005](adr/0005-kein-eigener-verzeichnisserver.md)) |
 
 Kernidee: **Niemand muss Gradle oder ein bestimmtes Java installieren**, und
@@ -145,6 +147,7 @@ alle bauen trotzdem mit denselben Versionen, lokal wie in der Pipeline.
 ```
 labyrinth/
 ├── settings.gradle.kts             Projektname, Module, Repositories, JDK-Download
+├── gradle.properties               Projektversion
 ├── gradlew, gradlew.bat            Wrapper-Startskripte (macOS/Linux, Windows)
 ├── gradle/
 │   ├── libs.versions.toml          Versionskatalog: alle Versionen an einer Stelle
@@ -195,7 +198,7 @@ flowchart TD
 |---|---|---|
 | `protocol` | Bibliothek | Nachrichtenklassen und JSON-Serialisierung |
 | `core` | Bibliothek | Spielmodell und Spielregeln |
-| `server` | Anwendung | Spielserver |
+| `server` | Anwendung | Spielserver mit JavaFX-Oberfläche, auch ohne Fenster startbar (4.10) |
 | `client-desktop` | Anwendung | JavaFX-Client mit KI |
 
 Der **Verzeichnisserver** ist kein Modul: Alle Gruppen nutzen einen gemeinsamen, der außerhalb dieses Repositories entsteht ([ADR 0005](adr/0005-kein-eigener-verzeichnisserver.md)). `server` meldet sich dort an, `client-desktop` holt dort die Serverliste; die dafür nötigen Nachrichten gehören in `protocol`.
@@ -241,6 +244,8 @@ testing {
 }
 ```
 
+Am Ende der Datei steht zusätzlich die Javadoc-Prüfung (Abschnitt 4.9).
+
 Jedes Modul übernimmt das mit einer Zeile:
 
 ```kotlin
@@ -266,7 +271,7 @@ Bibliotheken und Plugins stehen:
 | Eintrag | Version | Wofür |
 |---|---|---|
 | `junit` | 6.1.3 | Tests |
-| `javafx` | 21.0.12 | Oberfläche des Desktop-Clients |
+| `javafx` | 21.0.12 | Oberfläche von Server und Client |
 | Plugin `org.openjfx.javafxplugin` | 0.1.0 | bindet JavaFX passend zum Betriebssystem ein |
 
 Zusätzlich, außerhalb des Katalogs:
@@ -275,6 +280,13 @@ Zusätzlich, außerhalb des Katalogs:
 |---|---|---|
 | Gradle | 9.8.0 | `gradle/wrapper/gradle-wrapper.properties` |
 | Plugin `foojay-resolver-convention` | 1.0.0 | `settings.gradle.kts` (Settings-Plugins können den Katalog nicht nutzen) |
+| Projektversion | 0.1.0 | `gradle.properties` |
+
+**Projektversion:** `version=0.1.0` in `gradle.properties` gilt für alle
+Module und folgt Semantic Versioning (Pflichtenheft 12.4). Sie steht in den
+Dateinamen der Pakete (`server-0.1.0.zip`) und wird später als
+`serverVersion` in `SERVER_INFO` gemeldet (A-46). Wann sie erhöht wird, legt
+Abschnitt 7 fest (geplant).
 
 ### 4.7 Java-Version und Toolchain
 
@@ -307,16 +319,57 @@ Auswahl.
   `useJUnitJupiter(...)` im Konventions-Plugin. Gradle fügt die nötigen
   Bibliotheken selbst hinzu.
 - Tests liegen in `src/test/java`, im selben Paket wie die getestete Klasse.
+- Tests zu einer Anforderung tragen ihre Kennung, z. B. `@Tag("F-237")`
+  (Pflichtenheft 12.4, Regeln in [`CONTRIBUTING.md`](../CONTRIBUTING.md)).
 - `build` führt alle Tests aus; Testberichte liegen danach unter
   `<modul>/build/reports/tests/test/index.html`.
 
-### 4.9 JavaFX
+### 4.9 Javadoc-Prüfung
+
+Das Pflichtenheft verlangt Javadoc für alle öffentlichen Klassen und Methoden,
+nachgewiesen in der Pipeline (NF-09). Umgesetzt am Ende des
+Konventions-Plugins:
+
+```kotlin
+tasks.javadoc {
+    val javadocOptions = options as StandardJavadocDocletOptions
+    javadocOptions.addBooleanOption("Xdoclint:all", true)
+    javadocOptions.addBooleanOption("Werror", true)
+}
+
+tasks.check {
+    dependsOn(tasks.javadoc)
+}
+```
+
+- `-Xdoclint:all`: javadoc prüft fehlende Kommentare, fehlende `@param` und
+  `@return`, fehlerhaftes HTML und ungültige Verweise.
+- `-Werror`: Jede Warnung lässt die Aufgabe `javadoc` scheitern.
+- `check` hängt von `javadoc` ab. Damit führen `build` und die Pipeline die
+  Prüfung aus; `test` allein nicht.
+
+Geprüft wird nur der Hauptcode (`src/main/java`), und dort nur öffentliche und
+geschützte Klassen und Methoden. Methoden mit `@Override` erben die
+Beschreibung. Ob die Javadoc englisch ist (NF-13), prüft der Build nicht; das
+gehört ins Review. Regeln für das Team: [`CONTRIBUTING.md`](../CONTRIBUTING.md).
+
+Eine Meldung sieht so aus (lokal in der Sprache des installierten Java):
+
+```
+ServerApp.java:17: warning: no comment
+error: warnings found and -Werror specified
+```
+
+Die erzeugte Dokumentation liegt unter
+`<modul>/build/docs/javadoc/index.html`.
+
+### 4.10 JavaFX
 
 JavaFX ist seit Java 11 nicht mehr im JDK enthalten. Das Plugin
 `org.openjfx.javafxplugin` lädt die passende Variante für das jeweilige
 Betriebssystem (Windows, macOS Intel/Apple Silicon, Linux) und sorgt dafür,
-dass `run` den Client korrekt startet. Konfiguration in
-`client-desktop/build.gradle.kts`:
+dass `run` die Anwendung korrekt startet. Server und Client binden es gleich
+ein, in `server/build.gradle.kts` und `client-desktop/build.gradle.kts`:
 
 ```kotlin
 javafx {
@@ -325,17 +378,27 @@ javafx {
 }
 ```
 
-Weitere JavaFX-Module (z. B. `javafx.fxml`) werden dort ergänzt.
+Weitere JavaFX-Module (z. B. `javafx.fxml`) werden in der `build.gradle.kts`
+des jeweiligen Moduls ergänzt.
 
 Version 21: JavaFX 25 und neuer benötigen ein neueres JDK als 21.
 
-### 4.10 Wichtige Befehle
+**Server mit und ohne Fenster:** Startklasse des Servers ist `ServerApp`.
+Ohne Parameter öffnet sie das Fenster `ServerWindow` (Pflichtenheft M-01).
+Mit `--headless` läuft der Server ohne Fenster (S-04, F-237); JavaFX wird
+dabei gar nicht gestartet. Das braucht man auf Rechnern ohne Bildschirm,
+etwa für Integrationstests.
+
+### 4.11 Wichtige Befehle
 
 | Befehl (Windows; macOS/Linux: `./gradlew`) | Wirkung |
 |---|---|
-| `.\gradlew.bat build` | alles kompilieren, testen, paketieren |
+| `.\gradlew.bat build` | alles kompilieren, testen, Javadoc prüfen, paketieren |
+| `.\gradlew.bat build --continue` | wie `build`, zeigt aber die Fehler aller Module auf einmal |
 | `.\gradlew.bat test` | nur Tests |
-| `.\gradlew.bat :server:run` | Spielserver starten |
+| `.\gradlew.bat javadoc` | nur Javadoc erzeugen und prüfen |
+| `.\gradlew.bat :server:run` | Spielserver mit Fenster starten |
+| `.\gradlew.bat :server:run --args="--headless"` | Spielserver ohne Fenster starten |
 | `.\gradlew.bat :client-desktop:run` | Desktop-Client starten |
 | `.\gradlew.bat clean` | Build-Ergebnisse löschen |
 | `.\gradlew.bat build --warning-mode all` | Build mit allen Hinweisen auf veraltete Funktionen |
@@ -371,11 +434,11 @@ unter `include(...)` ergänzen, Gradle in IntelliJ neu laden.
 Danach einmal bauen und alle geänderten Dateien unter `gradle/wrapper/` sowie
 `gradlew`, `gradlew.bat` committen.
 
-### 4.11 Bekannte Probleme
+### 4.12 Bekannte Probleme
 
 | Problem | Auswirkung | Umgang |
 |---|---|---|
-| Das JavaFX-Plugin 0.1.0 (letzte Version, September 2023) nutzt beim Start des Clients eine veraltete Gradle-Funktion („Invocation of Task.extensions at execution time“). Gradle meldet: „Deprecated Gradle features were used …, making it incompatible with Gradle 10.“ | Nur `:client-desktop:run`. Build und Tests sind nicht betroffen. Funktioniert bis einschließlich Gradle 9. | Beobachten. Vor einem Wechsel auf Gradle 10 prüfen, ob es eine neue Plugin-Version gibt; sonst JavaFX ohne Plugin einbinden. |
+| Das JavaFX-Plugin 0.1.0 (letzte Version, September 2023) nutzt beim Start von Server und Client eine veraltete Gradle-Funktion („Invocation of Task.extensions at execution time“). Gradle meldet: „Deprecated Gradle features were used …, making it incompatible with Gradle 10.“ | Nur `:server:run` und `:client-desktop:run`. Build und Tests sind nicht betroffen. Funktioniert bis einschließlich Gradle 9. | Beobachten. Vor einem Wechsel auf Gradle 10 prüfen, ob es eine neue Plugin-Version gibt; sonst JavaFX ohne Plugin einbinden. |
 | Gradle empfiehlt bei jedem Build den „Configuration Cache“. | keine | Später prüfen und ggf. aktivieren. |
 
 ## 5. Pipeline
@@ -393,7 +456,7 @@ der Pipeline.
 | Dienst | GitHub Actions mit von GitHub bereitgestellten Rechnern (für öffentliche Repositories kostenlos) |
 | Rechner | `ubuntu-latest`, für jeden Lauf neu aufgesetzt und danach gelöscht |
 | Java | 21, Eclipse Temurin ([ADR 0004](adr/0004-jdk-21-temurin.md)) |
-| Befehl | `./gradlew build`: kompilieren, alle Tests, paketieren |
+| Befehl | `./gradlew build`: kompilieren, alle Tests, Javadoc prüfen, paketieren |
 | Name der Prüfung | `build` (wird im Branch-Schutz die Pflicht-Prüfung, Abschnitt 6) |
 | Zeitlimit | 15 Minuten |
 | Eingerichtet | 26.10.2026 |
@@ -459,7 +522,7 @@ eigenen Nutzungsbedingungen ([ADR 0007](adr/0007-ci-mit-github-actions.md)).
    fehlgeschlagene Schritt ist aufgeklappt, die Fehlermeldung steht meist am
    Ende.
 2. Den Fehler lokal nachstellen: `.\gradlew.bat build`. Häufigste Ursachen
-   sind Kompilierfehler und fehlgeschlagene Tests.
+   sind Kompilierfehler, fehlgeschlagene Tests und fehlende Javadoc.
 3. Korrigieren, committen, pushen. Die Pipeline läuft automatisch erneut.
 4. Baut es lokal, aber nicht in der Pipeline, liegt es meist am
    Betriebssystem: Groß- und Kleinschreibung in Dateinamen (Linux
@@ -523,4 +586,5 @@ Git-Tag markiert, damit jederzeit nachvollziehbar ist, was abgegeben wurde.
 | 11.10.2026 | Modul `directory-server` entfernt; gemeinsamer Verzeichnisserver für alle Gruppen (ADR 0005) | direkt auf main |
 | 25.10.2026 | Jira über „GitHub for Atlassian“ angebunden, Projekt-Key `AIP6`, keine Smart Commits (Abschnitt 3.1, ADR 0006); Platzhalter `LAB` in `CONTRIBUTING.md` und PR-Vorlage ersetzt | Jira-/GitHub-Oberfläche, Branches `AIP6-9-JIRA-TEST` (Test) und `docs/AIP6-9-jira-doku` |
 | 26.10.2026 | CI-Pipeline mit GitHub Actions: Build und Tests bei jedem Pull Request und jedem Push auf `main`, Java 21 (Temurin), Gradle-Cache „basic“, Wrapper-Prüfung (Abschnitt 5, ADR 0007) | Branch `chore/AIP6-7-ci-pipeline` |
+| 28.10.2026 | Angleichung an Pflichtenheft v1.2: Projektversion 0.1.0 in `gradle.properties`; JavaFX und Serverfenster im Server, Start ohne Fenster mit `--headless`; Javadoc-Prüfung im Build, Javadoc englisch; `.gitignore` um `logs/` und `server.properties`; Regeln für Javadoc und Anforderungs-IDs in `CONTRIBUTING.md`; PR-Vorlage mit Definition of Done (Abschnitt 4) | Branch `chore/AIP6-18-align-pflichtenheft` |
 
