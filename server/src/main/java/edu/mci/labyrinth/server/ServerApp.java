@@ -2,24 +2,42 @@ package edu.mci.labyrinth.server;
 
 import edu.mci.labyrinth.core.Board;
 import edu.mci.labyrinth.protocol.ProtocolVersion;
+import java.util.Arrays;
+import javafx.application.Application;
 
 /**
- * Startpunkt des Spielservers.
+ * Entry point of the game server.
  *
- * <p>Platzhalter aus dem Projektgerüst. Zeigt, dass der Server die Module
- * {@code protocol} und {@code core} benutzen kann.
+ * <p>Opens the server window by default. With the command line option
+ * {@code --headless} the server runs without a window (S-04, F-237).
  */
 public final class ServerApp {
+
+    static final String HEADLESS_OPTION = "--headless";
 
     private ServerApp() {
     }
 
+    /**
+     * Starts the game server.
+     *
+     * @param args command line arguments; {@code --headless} starts the
+     *             server without a window
+     */
     public static void main(String[] args) {
-        System.out.println(banner());
+        if (isHeadless(args)) {
+            System.out.println(banner());
+        } else {
+            Application.launch(ServerWindow.class, args);
+        }
+    }
+
+    static boolean isHeadless(String[] args) {
+        return Arrays.asList(args).contains(HEADLESS_OPTION);
     }
 
     static String banner() {
         return "Labyrinth-Server (Protokoll " + ProtocolVersion.CURRENT
-                + ", Spielbrett " + Board.SIZE + "x" + Board.SIZE + ")";
+                + ", Spielbrett " + Board.DEFAULT_SIZE + "x" + Board.DEFAULT_SIZE + ")";
     }
 }

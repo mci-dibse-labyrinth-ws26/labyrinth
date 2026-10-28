@@ -1,15 +1,12 @@
 package edu.mci.labyrinth.core;
 
 /**
- * Spielbrett des Labyrinths.
- *
- * <p>Platzhalter aus dem Projektgerüst. Das eigentliche Spielmodell entsteht
- * hier im Modul {@code core}.
+ * Game board of the labyrinth.
  */
 public final class Board {
 
-    /** Das Spielbrett hat 7 x 7 Felder. */
-    public static final int SIZE = 7;
+    /** Default number of rows and columns of the board (A-01). */
+    public static final int DEFAULT_SIZE = 7;
 
     private Board() {
     }

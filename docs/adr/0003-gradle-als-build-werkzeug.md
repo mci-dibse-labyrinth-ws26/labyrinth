@@ -67,4 +67,4 @@ Details zum Aufbau: [`devops.md`, Abschnitt 4](../devops.md#4-build).
   Modul benutzt.
 - Das JavaFX-Plugin (0.1.0) wird nicht mehr aktiv gepflegt und erzeugt eine
   Warnung zur Kompatibilität mit Gradle 10. Vor einem Wechsel auf Gradle 10 ist
-  das zu prüfen (siehe `devops.md`, Abschnitt 4.11).
+  das zu prüfen (siehe `devops.md`, Abschnitt 4.12).

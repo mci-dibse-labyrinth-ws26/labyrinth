@@ -41,6 +41,7 @@ Im IntelliJ-Terminal (unter macOS/Linux `./gradlew` statt `.\gradlew.bat`):
 | Alles bauen und testen | `.\gradlew.bat build` |
 | Nur die Tests | `.\gradlew.bat test` |
 | Spielserver starten | `.\gradlew.bat :server:run` |
+| Spielserver ohne Fenster | `.\gradlew.bat :server:run --args="--headless"` |
 | Desktop-Client starten | `.\gradlew.bat :client-desktop:run` |
 
 ## Mitarbeiten
