@@ -150,10 +150,14 @@ flowchart LR
     E --> F[Branch löschen]
 ```
 
-- Mindestens **eine Freigabe** durch jemand anderen.
-- Zuständigkeiten stehen in `.github/CODEOWNERS` und werden automatisch
-  angefragt.
-- Niemand mergt seinen eigenen PR ohne fremde Freigabe.
+- Mindestens **eine Freigabe** durch jemand anderen. Feste Zuständige gibt es
+  nicht: Bitte im PR rechts unter *Reviewers* jemanden ums Review, der den
+  Bereich kennt.
+- Offene Review-Kommentare werden vor dem Merge erledigt
+  (*Resolve conversation*).
+- GitHub erzwingt das: Ohne fremde Freigabe, grüne Pipeline und erledigte
+  Kommentare bleibt der Merge-Knopf gesperrt
+  ([`devops.md`, Abschnitt 6](docs/devops.md#6-branch-schutz)).
 - **Squash-Merge**: alle Commits des Branches werden zu einem zusammengefasst,
   benannt nach dem PR-Titel. `main` bleibt dadurch linear und lesbar — ein
   Commit pro abgeschlossener Aufgabe. Andere Merge-Arten sind abgeschaltet.

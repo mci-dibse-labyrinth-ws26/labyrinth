@@ -29,7 +29,7 @@ hier nachgetragen, Abschnitt 8 hält sie chronologisch fest.
 |---|---|
 | Organisation | `mci-dibse-labyrinth-ws26` (kostenloser Plan) |
 | Repository | `labyrinth`, **öffentlich** |
-| Owner | Technikverantwortung |
+| Owner | Technikverantwortung, Qualitätsmanagement |
 | Team `entwickler` | alle Gruppenmitglieder, Recht **Write** auf `labyrinth` |
 | Third-party access | eingeschränkt; freigegeben ist die JetBrains-App (IntelliJ) |
 | GitHub-Apps | „GitHub for Atlassian“ (Jira), Zugriff nur auf `labyrinth` (Abschnitt 3.1) |
@@ -457,7 +457,7 @@ der Pipeline.
 | Rechner | `ubuntu-latest`, für jeden Lauf neu aufgesetzt und danach gelöscht |
 | Java | 21, Eclipse Temurin ([ADR 0004](adr/0004-jdk-21-temurin.md)) |
 | Befehl | `./gradlew build`: kompilieren, alle Tests, Javadoc prüfen, paketieren |
-| Name der Prüfung | `build` (wird im Branch-Schutz die Pflicht-Prüfung, Abschnitt 6) |
+| Name der Prüfung | `build`, Pflicht-Prüfung im Branch-Schutz (Abschnitt 6) |
 | Zeitlimit | 15 Minuten |
 | Eingerichtet | 26.10.2026 |
 
@@ -466,7 +466,7 @@ der Pipeline.
 | Auslöser | Wann |
 |---|---|
 | `pull_request` | beim Öffnen eines Pull Requests und bei jedem weiteren Push auf dessen Branch |
-| `push` auf `main` | nach jedem Merge, und bei direkten Pushes, solange `main` nicht geschützt ist |
+| `push` auf `main` | nach jedem Merge (direkte Pushes sind gesperrt, Abschnitt 6) |
 | `workflow_dispatch` | von Hand: Tab *Actions* → *Build* → *Run workflow* |
 
 Bei einem Pull Request baut die Pipeline nicht den Branch allein, sondern das
@@ -540,26 +540,57 @@ eigenen Nutzungsbedingungen ([ADR 0007](adr/0007-ci-mit-github-actions.md)).
 - Die Actions sind über ihre Hauptversion eingebunden (`@v7`). Fehlerkorrekturen
   kommen damit automatisch, brechende Änderungen nicht. Eine neue
   Hauptversion wird von Hand eingetragen und in Abschnitt 8 vermerkt.
-- Der Job heißt `build`. Unter diesem Namen wird er die Pflicht-Prüfung im
+- Der Job heißt `build`. Unter diesem Namen ist er die Pflicht-Prüfung im
   Branch-Schutz; wer ihn umbenennt, muss den Branch-Schutz anpassen.
 
 ### 5.8 Geplante Erweiterungen
 
 - Testberichte und Testabdeckung (JaCoCo) als Ergebnis jedes Laufs, zusammen
   mit dem Testplan.
-- Pipeline als Pflicht-Prüfung im Branch-Schutz (Abschnitt 6).
 - Releases bei Abgabe-Tags (Abschnitt 7).
 
 ## 6. Branch-Schutz
 
-*Geplant*, nachdem alle das Projekt einmal gebaut und einen ersten Pull Request
-durchgespielt haben. Vorgesehen für `main`: Änderungen nur per Pull Request,
-mindestens eine Freigabe, Pipeline muss grün sein. Zuständigkeiten pro Ordner
-über `.github/CODEOWNERS` (`protocol/` → Schnittstellenvertretung, `docs/` →
-Qualitätsmanagement).
+`main` ist seit dem 11.11.2026 geschützt
+([ADR 0008](adr/0008-main-mit-ruleset-schuetzen.md)). Eingerichtet als Ruleset
+unter *Settings → Rules → Rulesets*. Alle mit Lesezugriff sehen die Regeln im
+Repository unter *Rules*.
 
-Bewusst zuletzt: Solange nur eine Person am Repository arbeitet, würde die
-Review-Pflicht sie selbst blockieren.
+| Einstellung | Wert | Wirkung |
+|---|---|---|
+| Name, Status | `protect-main`, **Active** | Regel greift (*Evaluate* würde nur protokollieren) |
+| Target branches | *Default* | gilt für `main`, auch nach einer Umbenennung |
+| Restrict deletions | an | `main` kann nicht gelöscht werden |
+| Block force pushes | an | der Verlauf kann nicht überschrieben werden |
+| Require a pull request before merging | an | kein direkter Push auf `main` |
+| → Required approvals | **1** | eine Freigabe durch eine andere Person; die eigene zählt nicht |
+| → Dismiss stale approvals | aus | eine Freigabe bleibt bei Nachträgen gültig; die Pipeline läuft trotzdem neu |
+| → Require review from Code Owners | aus | kein `CODEOWNERS` (ADR 0008) |
+| → Require conversation resolution | an | offene Review-Kommentare blockieren den Merge |
+| → Additional approval for Copilot pull requests | an (Voreinstellung) | betrifft nur Pull Requests, die Copilot selbst eröffnet |
+| → Allowed merge methods | nur **Squash** | ein Commit pro Pull Request (Abschnitt 2) |
+| Require status checks to pass | `build` (*Any source*) | Merge nur bei grüner Pipeline (Abschnitt 5) |
+| → Require branches to be up to date | aus | die Pipeline baut ohnehin das Ergebnis nach dem Merge (5.2) |
+| Bypass list | *Organization admin*, **For pull requests only** | Notausgang, siehe unten |
+
+Alle übrigen Regeln sind aus.
+
+**Notausgang:** Owner der Organisation (Abschnitt 1) dürfen einen Pull Request
+mergen, obwohl Freigabe oder grüne Pipeline fehlen. Direkt auf `main` pushen
+können auch sie nicht. Gedacht nur für Notfälle, etwa wenn kurz vor einer
+Abgabe niemand für ein Review erreichbar ist oder die Pipeline wegen einer
+Störung bei GitHub nicht läuft. Der Grund steht dann im Pull Request.
+
+**Reviews:** Freigeben kann jede Person mit Schreibrecht, also das ganze Team
+`entwickler`. Feste Zuständige gibt es nicht; wer einen Pull Request öffnet,
+wählt rechts unter *Reviewers* jemanden aus.
+
+**Geprüft** am 11.11.2026: Ein direkter Push auf `main` (auch als Owner) wird
+abgelehnt mit `GH013: Repository rule violations`, *Changes must be made
+through a pull request* und *Required status check "build" is expected*.
+
+**Ändern** dürfen das Ruleset nur Owner. Jede Änderung kommt hierher und in
+Abschnitt 8; eine geänderte Entscheidung bekommt eine neue ADR.
 
 ## 7. Releases und Tags
 
@@ -587,4 +618,5 @@ Git-Tag markiert, damit jederzeit nachvollziehbar ist, was abgegeben wurde.
 | 25.10.2026 | Jira über „GitHub for Atlassian“ angebunden, Projekt-Key `AIP6`, keine Smart Commits (Abschnitt 3.1, ADR 0006); Platzhalter `LAB` in `CONTRIBUTING.md` und PR-Vorlage ersetzt | Jira-/GitHub-Oberfläche, Branches `AIP6-9-JIRA-TEST` (Test) und `docs/AIP6-9-jira-doku` |
 | 26.10.2026 | CI-Pipeline mit GitHub Actions: Build und Tests bei jedem Pull Request und jedem Push auf `main`, Java 21 (Temurin), Gradle-Cache „basic“, Wrapper-Prüfung (Abschnitt 5, ADR 0007) | Branch `chore/AIP6-7-ci-pipeline` |
 | 28.10.2026 | Angleichung an Pflichtenheft v1.2: Projektversion 0.1.0 in `gradle.properties`; JavaFX und Serverfenster im Server, Start ohne Fenster mit `--headless`; Javadoc-Prüfung im Build, Javadoc englisch; `.gitignore` um `logs/` und `server.properties`; Regeln für Javadoc und Anforderungs-IDs in `CONTRIBUTING.md`; PR-Vorlage mit Definition of Done (Abschnitt 4) | Branch `chore/AIP6-18-align-pflichtenheft` |
+| 11.11.2026 | Branch-Schutz für `main` als Ruleset `protect-main`: nur per Pull Request, eine fremde Freigabe, Pflicht-Prüfung `build`, offene Kommentare erledigt, nur Squash; Notausgang für Owner nur über Pull Requests; kein `CODEOWNERS` (Abschnitt 6, ADR 0008) | GitHub-Oberfläche, Branch `docs/AIP6-16-branch-schutz-main` |
 
