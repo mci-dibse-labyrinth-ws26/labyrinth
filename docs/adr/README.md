@@ -13,6 +13,7 @@ warum wir das tun, steht in [ADR 0001](0001-architekturentscheidungen-festhalten
 | [0005](0005-kein-eigener-verzeichnisserver.md) | Kein eigener Verzeichnisserver | angenommen | 11.10.2026 |
 | [0006](0006-jira-ueber-ticket-key-verknuepfen.md) | Jira und GitHub über den Ticket-Key verknüpfen | angenommen | 25.10.2026 |
 | [0007](0007-ci-mit-github-actions.md) | Build und Tests mit GitHub Actions automatisieren | angenommen | 26.10.2026 |
+| [0008](0008-main-mit-ruleset-schuetzen.md) | `main` mit einem Ruleset schützen | angenommen | 11.11.2026 |
 
 ## Neue ADR anlegen
 
