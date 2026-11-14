@@ -66,6 +66,10 @@ class BoardValidationTest {
 
         assertFalse(board.contains(new Position(3, 0)));
         assertFalse(board.contains(new Position(0, 5)));
+
+        // Negative coordinates must be outside the board.
+        assertFalse(board.contains(new Position(-1, 0)));
+        assertFalse(board.contains(new Position(0, -1)));
     }
 
     private static Board createBoard(int rows, int cols) {

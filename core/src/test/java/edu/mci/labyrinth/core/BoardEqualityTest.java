@@ -3,13 +3,11 @@ package edu.mci.labyrinth.core;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
  * Tests structural equality and hashing of boards.
  */
-@Tag("A-29")
 class BoardEqualityTest {
 
     private static final Tile TILE =

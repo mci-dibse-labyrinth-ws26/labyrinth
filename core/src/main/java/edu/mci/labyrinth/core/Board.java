@@ -88,7 +88,9 @@ public record Board(
     public boolean contains(Position position) {
         Objects.requireNonNull(position, "Position must not be null");
 
-        return position.row() < rows
+        return position.row() >= 0
+            && position.row() < rows
+            && position.column() >= 0
             && position.column() < cols;
     }
 
