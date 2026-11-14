@@ -3,7 +3,6 @@ package edu.mci.labyrinth.core;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.Test;
 class BoardImmutabilityTest {
 
     @Test
-    @Tag("A-29")
     void modifyingOriginalArrayDoesNotChangeBoard() {
 
         Tile original = new Tile(
@@ -35,7 +33,6 @@ class BoardImmutabilityTest {
     }
 
     @Test
-    @Tag("A-29")
     void modifyingReturnedArrayDoesNotChangeBoard() {
 
         Tile original = new Tile(

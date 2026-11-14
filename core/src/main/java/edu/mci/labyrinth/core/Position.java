@@ -2,23 +2,32 @@
 package edu.mci.labyrinth.core;
 
 /**
- * Represents a position on the labyrinth board using
- * kartesian row and column coordinates.
+ * Represents a position using zero-based row and column coordinates.
+ * Coordinates may be outside the board boundaries.
  *
- * @param row the row index
- * @param column the column index
+ * @param row the row coordinate
+ * @param column the column coordinate
  */
 public record Position(int row, int column) {
 
     /**
-     * Validates the position coordinates.
+     * Returns the neighbouring position in the given direction.
      *
-     * @throws IllegalArgumentException if either coordinate is negative
+     * <p>The returned position may be outside the board.
+     * Use Board.contains() to check board boundaries.</p>
+     *
+     * @param direction the direction to move
+     * @return the neighbouring position
+     * @throws NullPointerException if direction is null
      */
-    public Position {
-        if (row < 0 || column < 0) {
-            throw new IllegalArgumentException(
-                "Row and column must be non-negative");
-        }
+    public Position neighbor(Direction direction) {
+        java.util.Objects.requireNonNull(direction, "Direction must not be null");
+
+        return switch (direction) {
+            case UP -> new Position(row - 1, column);
+            case RIGHT -> new Position(row, column + 1);
+            case DOWN -> new Position(row + 1, column);
+            case LEFT -> new Position(row, column - 1);
+        };
     }
 }
