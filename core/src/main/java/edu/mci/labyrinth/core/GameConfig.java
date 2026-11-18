@@ -29,42 +29,13 @@ public record GameConfig(int rows, int cols, int playerCount, int treasuresPerPl
     /** Largest number of treasures in a game, one per treasure symbol (A-04). */
     public static final int MAX_TREASURES = Treasure.NAMES.size();
 
-    /** Start corners never hold a treasure (A-04). */
-    private static final int START_CORNERS = 4;
-
     /**
-     * Validates the configuration.
+     * Validates the configuration with {@link RuleValidator#validateConfig}.
      *
      * @throws InvalidConfigException if a value is outside the allowed limits
      */
     public GameConfig {
-        requireValidBoardSize("rows", rows);
-        requireValidBoardSize("cols", cols);
-
-        if (playerCount < MIN_PLAYERS || playerCount > MAX_PLAYERS) {
-            throw new InvalidConfigException("playerCount must be between "
-                    + MIN_PLAYERS + " and " + MAX_PLAYERS + ", was " + playerCount);
-        }
-
-        if (treasuresPerPlayer < 1) {
-            throw new InvalidConfigException(
-                    "treasuresPerPlayer must be at least 1, was " + treasuresPerPlayer);
-        }
-
-        int totalTreasures = playerCount * treasuresPerPlayer;
-
-        if (totalTreasures > MAX_TREASURES) {
-            throw new InvalidConfigException("playerCount * treasuresPerPlayer must not exceed "
-                    + MAX_TREASURES + ", was " + totalTreasures);
-        }
-
-        // All tiles including the spare tile, except the start corners: rows * cols - 3.
-        int treasureTiles = rows * cols + 1 - START_CORNERS;
-
-        if (totalTreasures > treasureTiles) {
-            throw new InvalidConfigException("playerCount * treasuresPerPlayer must not exceed "
-                    + "rows * cols - 3 = " + treasureTiles + ", was " + totalTreasures);
-        }
+        RuleValidator.validateConfig(rows, cols, playerCount, treasuresPerPlayer);
     }
 
     /**
@@ -74,12 +45,5 @@ public record GameConfig(int rows, int cols, int playerCount, int treasuresPerPl
      */
     public int totalTreasures() {
         return playerCount * treasuresPerPlayer;
-    }
-
-    private static void requireValidBoardSize(String name, int size) {
-        if (size < MIN_BOARD_SIZE || size > MAX_BOARD_SIZE || size % 2 == 0) {
-            throw new InvalidConfigException(name + " must be odd and between "
-                    + MIN_BOARD_SIZE + " and " + MAX_BOARD_SIZE + ", was " + size);
-        }
     }
 }
