@@ -1,8 +1,9 @@
 // Gemeinsame Einstellungen für alle Java-Module im Projekt.
-// Ein Modul übernimmt sie mit: plugins { id("labyrinth.java-conventions") }
+// Ein Modul übernimmt sie mit: plugins{ id("labyrinth.java-conventions") }
 
 plugins {
     java
+    jacoco
 }
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
@@ -31,3 +32,23 @@ tasks.javadoc {
 tasks.check {
     dependsOn(tasks.javadoc)
 }
+
+// Testabdeckung mit JaCoCo (NF-10). Nach jedem Testlauf entsteht ein Bericht.
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+// Ab Phase 3 (23.11.2026) scharf schalten: Dann lässt ein Unterschreiten der
+// Mindestwerte (Testplan 5.1) den Build scheitern (AIP6-15). Vorher prüfen,
+// ob ./gradlew jacocoTestCoverageVerification grün ist.
+// tasks.check {
+//     dependsOn(tasks.jacocoTestCoverageVerification)
+// }
