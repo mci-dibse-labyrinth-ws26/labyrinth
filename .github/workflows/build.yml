@@ -32,4 +32,15 @@ jobs:
           cache-provider: basic
 
       - name: Bauen und testen
-        run: ./gradlew build
+        run: ./gradlew build --continue
+
+      - name: Test- und Abdeckungsberichte hochladen
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: testberichte
+          path: |
+            */build/reports/tests/test/
+            */build/reports/jacoco/test/
+          retention-days: 14
+          if-no-files-found: warn
