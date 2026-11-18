@@ -227,6 +227,7 @@ Was für alle Java-Module gleich ist, steht einmal in
 ```kotlin
 plugins {
     java
+    jacoco
 }
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
@@ -244,7 +245,8 @@ testing {
 }
 ```
 
-Am Ende der Datei steht zusätzlich die Javadoc-Prüfung (Abschnitt 4.9).
+Am Ende der Datei stehen zusätzlich die Testabdeckung mit JaCoCo (Abschnitt 4.8)
+und die Javadoc-Prüfung (Abschnitt 4.9).
 
 Jedes Modul übernimmt das mit einer Zeile:
 
@@ -324,6 +326,44 @@ Auswahl.
 - `build` führt alle Tests aus; Testberichte liegen danach unter
   `<modul>/build/reports/tests/test/index.html`.
 
+#### Testabdeckung (JaCoCo)
+
+Nach jedem Testlauf erzeugt JaCoCo je Modul einen Abdeckungsbericht
+(Pflichtenheft NF-10, Testplan Abschnitt 5) unter
+`<modul>/build/reports/jacoco/test/html/index.html`, dazu eine XML-Fassung
+für Werkzeuge. Eingerichtet ist das im Konventions-Plugin (`jacoco`,
+`tasks.test` mit `finalizedBy(tasks.jacocoTestReport)`); die JaCoCo-Version
+bringt Gradle mit. In der Pipeline landen die Berichte im Artefakt
+`testberichte` (5.3).
+
+Im Bericht: grün = von Tests ausgeführt, rot = nie ausgeführt, gelb = nur ein
+Teil der Zweige (`if`/`else`) getestet.
+
+Die Mindestwerte aus Testplan 5.1 stehen im jeweiligen Modul im Task
+`jacocoTestCoverageVerification`:
+
+| Modul | Regel | Mindestwert |
+|---|---|---|
+| `core` | Zeilenabdeckung des Moduls | 80 % |
+| `core` | Zweigabdeckung der Klassen `RuleValidator*` (V-05 bis V-12, V-15) | 100 % |
+| `server` | Zeilenabdeckung des Moduls, ohne `ServerApp` und `ServerWindow` | 70 % |
+| `protocol`, `client-desktop` | keine | – |
+
+- Gemessen wird nur vorhandener Code. Eine Regel für Klassen, die es noch nicht
+  gibt, prüft nichts; offene Tickets lassen also keinen Build scheitern.
+- Startklasse und JavaFX-Fenster des Servers sind von Bericht und Prüfung
+  ausgenommen (Testplan 5.2), über `classDirectories` für alle Tasks vom Typ
+  `JacocoReportBase` in `server/build.gradle.kts`.
+- Die Regel für die Prüfklassen im Server (V-01 bis V-04, V-13, V-14, V-16,
+  V-17) folgt, sobald diese Klassen existieren (AIP6-65).
+- **Stand 18.11.2026:** Die Regeln laufen nur bei einem eigenen Aufruf von
+  `jacocoTestCoverageVerification`; `build` scheitert noch nicht daran. Zum
+  Start von Phase 3 werden im Konventions-Plugin die drei auskommentierten
+  Zeilen aktiviert, die die Prüfung an `check` hängen. Vorher muss
+  `jacocoTestCoverageVerification` auf `main` grün sein. Ab dann scheitert jeder
+  Build, der einen Mindestwert unterschreitet, und zwar im Pull Request, der den
+  ungetesteten Code bringt.
+
 ### 4.9 Javadoc-Prüfung
 
 Das Pflichtenheft verlangt Javadoc für alle öffentlichen Klassen und Methoden,
@@ -395,7 +435,8 @@ etwa für Integrationstests.
 |---|---|
 | `.\gradlew.bat build` | alles kompilieren, testen, Javadoc prüfen, paketieren |
 | `.\gradlew.bat build --continue` | wie `build`, zeigt aber die Fehler aller Module auf einmal |
-| `.\gradlew.bat test` | nur Tests |
+| `.\gradlew.bat test` | nur Tests, danach Abdeckungsbericht je Modul (4.8) |
+| `.\gradlew.bat jacocoTestCoverageVerification` | Mindestwerte der Testabdeckung prüfen (4.8) |
 | `.\gradlew.bat javadoc` | nur Javadoc erzeugen und prüfen |
 | `.\gradlew.bat :server:run` | Spielserver mit Fenster starten |
 | `.\gradlew.bat :server:run --args="--headless"` | Spielserver ohne Fenster starten |
@@ -487,7 +528,15 @@ um ein Review wird erst mit *Ready for review* gebeten.
 | Code auschecken | `actions/checkout` holt den zu prüfenden Stand |
 | Java 21 (Temurin) einrichten | `actions/setup-java` installiert das JDK. Gradle findet es auch für die Toolchain, ein Download über foojay entfällt |
 | Gradle einrichten | `gradle/actions/setup-gradle` stellt den Cache wieder her (5.4) und prüft den Gradle Wrapper (5.5) |
-| Bauen und testen | `./gradlew build`, derselbe Befehl wie lokal |
+| Bauen und testen | `./gradlew build --continue`: wie lokal, testet aber auch dann alle Module, wenn eines scheitert |
+| Berichte hochladen | `actions/upload-artifact` speichert Test- und Abdeckungsberichte aller Module als Artefakt `testberichte`, auch wenn der Lauf rot ist (`if: always()`); 14 Tage aufbewahrt |
+
+**Berichte ansehen:** Im Lauf auf *Summary* klicken, ganz unten unter
+*Artifacts* `testberichte` herunterladen, **entpacken** und z. B.
+`core/build/reports/jacoco/test/html/index.html` öffnen. Direkt aus der
+ZIP-Datei geöffnet fehlen dem Bericht Formatierung und Balken. Fehlt der
+JaCoCo-Bericht eines Moduls, sind dort Tests fehlgeschlagen; der Testbericht ist
+immer dabei.
 
 Lokal gilt weiterhin: **Vor jedem Commit muss der lokale Build grün sein**
 ([`CONTRIBUTING.md`](../CONTRIBUTING.md)). Die Pipeline ist die zweite
@@ -520,7 +569,8 @@ eigenen Nutzungsbedingungen ([ADR 0007](adr/0007-ci-mit-github-actions.md)).
 
 1. Im Pull Request bei den Prüfungen auf **Details** klicken. Der
    fehlgeschlagene Schritt ist aufgeklappt, die Fehlermeldung steht meist am
-   Ende.
+   Ende. Welcher Test fehlschlägt, zeigt der Testbericht im Artefakt
+   `testberichte` (5.3).
 2. Den Fehler lokal nachstellen: `.\gradlew.bat build`. Häufigste Ursachen
    sind Kompilierfehler, fehlgeschlagene Tests und fehlende Javadoc.
 3. Korrigieren, committen, pushen. Die Pipeline läuft automatisch erneut.
@@ -536,17 +586,19 @@ eigenen Nutzungsbedingungen ([ADR 0007](adr/0007-ci-mit-github-actions.md)).
 | `actions/checkout` | v7 | Code holen |
 | `actions/setup-java` | v5 | JDK installieren |
 | `gradle/actions/setup-gradle` | v6 | Cache, Wrapper-Prüfung, Zusammenfassung des Laufs |
+| `actions/upload-artifact` | v7 | Test- und Abdeckungsberichte als Artefakt |
 
 - Die Actions sind über ihre Hauptversion eingebunden (`@v7`). Fehlerkorrekturen
   kommen damit automatisch, brechende Änderungen nicht. Eine neue
   Hauptversion wird von Hand eingetragen und in Abschnitt 8 vermerkt.
+- Nur Actions von verifizierten Herausgebern verwenden (im GitHub Marketplace
+  „Verified creator“, z. B. `actions`, `gradle`), keine Kopien Dritter. Eine
+  Action läuft mit Zugriff auf den Code des Repositorys.
 - Der Job heißt `build`. Unter diesem Namen ist er die Pflicht-Prüfung im
   Branch-Schutz; wer ihn umbenennt, muss den Branch-Schutz anpassen.
 
 ### 5.8 Geplante Erweiterungen
 
-- Testberichte und Testabdeckung (JaCoCo) als Ergebnis jedes Laufs, zusammen
-  mit dem Testplan.
 - Releases bei Abgabe-Tags (Abschnitt 7).
 
 ## 6. Branch-Schutz
@@ -619,4 +671,5 @@ Git-Tag markiert, damit jederzeit nachvollziehbar ist, was abgegeben wurde.
 | 26.10.2026 | CI-Pipeline mit GitHub Actions: Build und Tests bei jedem Pull Request und jedem Push auf `main`, Java 21 (Temurin), Gradle-Cache „basic“, Wrapper-Prüfung (Abschnitt 5, ADR 0007) | Branch `chore/AIP6-7-ci-pipeline` |
 | 28.10.2026 | Angleichung an Pflichtenheft v1.2: Projektversion 0.1.0 in `gradle.properties`; JavaFX und Serverfenster im Server, Start ohne Fenster mit `--headless`; Javadoc-Prüfung im Build, Javadoc englisch; `.gitignore` um `logs/` und `server.properties`; Regeln für Javadoc und Anforderungs-IDs in `CONTRIBUTING.md`; PR-Vorlage mit Definition of Done (Abschnitt 4) | Branch `chore/AIP6-18-align-pflichtenheft` |
 | 11.11.2026 | Branch-Schutz für `main` als Ruleset `protect-main`: nur per Pull Request, eine fremde Freigabe, Pflicht-Prüfung `build`, offene Kommentare erledigt, nur Squash; Notausgang für Owner nur über Pull Requests; kein `CODEOWNERS` (Abschnitt 6, ADR 0008) | GitHub-Oberfläche, Branch `docs/AIP6-16-branch-schutz-main` |
+| 18.11.2026 | Testabdeckung mit JaCoCo: Bericht nach jedem Testlauf; Mindestwerte für `core` und `server` laut Testplan 5.1 vorbereitet, scharf ab Phase 3; Pipeline mit `--continue`, Test- und Abdeckungsberichte als Artefakt `testberichte`, `actions/upload-artifact@v7` (Abschnitte 4.8, 5.3, 5.7) | Branch `chore/AIP6-15-testberichte-testabdeckung` |
 
