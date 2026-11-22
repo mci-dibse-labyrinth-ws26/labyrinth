@@ -6,7 +6,7 @@ package edu.mci.labyrinth.protocol;
 public final class ProtocolVersion {
 
     /** Current protocol version. */
-    public static final String CURRENT = "0.1.0";
+    public static final String CURRENT = "2.0.0";
 
     private ProtocolVersion() {
     }
