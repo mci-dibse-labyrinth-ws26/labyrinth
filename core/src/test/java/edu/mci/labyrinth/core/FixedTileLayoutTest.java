@@ -22,6 +22,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @Tag("F-210")
+@Tag("A-02")
+@Tag("A-32")
 class FixedTileLayoutTest {
 
     @ParameterizedTest(name = "({0}, {1}) fixed: {2}")

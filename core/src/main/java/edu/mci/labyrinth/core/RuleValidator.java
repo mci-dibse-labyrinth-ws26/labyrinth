@@ -57,8 +57,7 @@ public final class RuleValidator {
     }
 
     private static void requireValidBoardSize(String name, int size) {
-        if (size < GameConfig.MIN_BOARD_SIZE || size > GameConfig.MAX_BOARD_SIZE
-                || size % 2 == 0) {
+        if (!GameConfig.isValidBoardSize(size)) {
             throw new InvalidConfigException(name + " must be odd and between "
                     + GameConfig.MIN_BOARD_SIZE + " and " + GameConfig.MAX_BOARD_SIZE
                     + ", was " + size);

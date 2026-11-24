@@ -35,6 +35,7 @@ class RuleValidatorTest {
         "7, 6",
         "-7, 7",
     })
+    @Tag("A-01")
     void rejectsInvalidBoardSize(int rows, int cols) {
         assertThrows(InvalidConfigException.class,
                 () -> RuleValidator.validateConfig(rows, cols, 2, 6));
@@ -55,12 +56,14 @@ class RuleValidatorTest {
     }
 
     @Test
+    @Tag("A-04")
     void rejectsMoreThanTwentyFourTreasuresInTotal() {
         assertThrows(InvalidConfigException.class,
                 () -> RuleValidator.validateConfig(15, 15, 4, 7));
     }
 
     @Test
+    @Tag("A-04")
     void rejectsMoreTreasuresThanTilesOutsideStartCorners() {
         assertThrows(InvalidConfigException.class,
                 () -> RuleValidator.validateConfig(3, 3, 2, 4));

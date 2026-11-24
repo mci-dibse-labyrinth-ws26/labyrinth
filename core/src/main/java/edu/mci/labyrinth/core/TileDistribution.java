@@ -97,8 +97,7 @@ public final class TileDistribution {
     }
 
     private static void requireValidSize(int size) {
-        if (size < GameConfig.MIN_BOARD_SIZE || size > GameConfig.MAX_BOARD_SIZE
-                || size % 2 == 0) {
+        if (!GameConfig.isValidBoardSize(size)) {
             throw new IllegalArgumentException("Board size must be odd and between "
                     + GameConfig.MIN_BOARD_SIZE + " and " + GameConfig.MAX_BOARD_SIZE
                     + ", was " + size);

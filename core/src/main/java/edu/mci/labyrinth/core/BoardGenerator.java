@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.Set;
 import java.util.random.RandomGenerator;
 
 /**
@@ -36,16 +37,30 @@ public final class BoardGenerator {
      * Generates the starting state of a game.
      *
      * <p>Treasures lie on any tile except the four corners, the spare tile included (A-04).
-     * Players take the colors and start corners in join order (A-06): top left, bottom right,
-     * top right, bottom left. Each player gets {@code treasuresPerPlayer} treasures of the game
-     * as hidden deck.
+     * Players keep the colors the server assigned when they joined (A-06), so the list may have
+     * gaps, for example {@code [BLUE, GREEN]} after a player left the lobby. Start corners follow
+     * the position in the list: top left, bottom right, top right, bottom left; two players
+     * therefore always start diagonally. Each player gets {@code treasuresPerPlayer} treasures of
+     * the game as hidden deck.
      *
      * @param config validated configuration of the game
+     * @param players colors of the players in join order, one per player of {@code config}
      * @param seed start value of all random decisions; the same seed gives the same game
      * @return board with treasures, start corners, treasure decks and turn order
+     * @throws IllegalArgumentException if the number of colors does not match the configuration
+     *     or a color occurs twice
      */
-    public static GameSetup generate(GameConfig config, long seed) {
+    public static GameSetup generate(GameConfig config, List<PlayerColor> players, long seed) {
         Objects.requireNonNull(config, "Config must not be null");
+        players = List.copyOf(players);
+        if (players.size() != config.playerCount()) {
+            throw new IllegalArgumentException("Expected " + config.playerCount()
+                    + " player colors, got " + players.size());
+        }
+        if (Set.copyOf(players).size() != players.size()) {
+            throw new IllegalArgumentException("Player colors must be distinct: " + players);
+        }
+
         int rows = config.rows();
         int cols = config.cols();
         RandomGenerator random = new Random(seed);
@@ -82,7 +97,6 @@ public final class BoardGenerator {
             }
         }
 
-        List<PlayerColor> players = List.of(PlayerColor.values()).subList(0, config.playerCount());
         Map<PlayerColor, Position> startPositions = new EnumMap<>(PlayerColor.class);
         Map<PlayerColor, List<Treasure>> decks = new EnumMap<>(PlayerColor.class);
         int perPlayer = config.treasuresPerPlayer();

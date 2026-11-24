@@ -24,6 +24,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @Tag("F-210")
+@Tag("A-02")
+@Tag("A-03")
 class BoardGeneratorTest {
 
     private static final long[] SEEDS = {0, 1, 42, 2026};

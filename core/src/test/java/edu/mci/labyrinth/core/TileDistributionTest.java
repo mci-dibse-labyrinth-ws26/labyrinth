@@ -15,6 +15,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @Tag("F-210")
+@Tag("A-03")
 class TileDistributionTest {
 
     @ParameterizedTest(name = "{0} x {1}: {2} fixed, {3} loose")

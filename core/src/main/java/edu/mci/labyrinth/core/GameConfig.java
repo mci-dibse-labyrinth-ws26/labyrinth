@@ -39,6 +39,17 @@ public record GameConfig(int rows, int cols, int playerCount, int treasuresPerPl
     }
 
     /**
+     * Checks whether a number of rows or columns is allowed (A-01).
+     *
+     * @param size number of rows or columns
+     * @return {@code true} if the size is odd and between {@link #MIN_BOARD_SIZE} and
+     *     {@link #MAX_BOARD_SIZE}
+     */
+    public static boolean isValidBoardSize(int size) {
+        return size >= MIN_BOARD_SIZE && size <= MAX_BOARD_SIZE && size % 2 == 1;
+    }
+
+    /**
      * Returns the total number of treasures in the game.
      *
      * @return number of players multiplied by treasures per player
