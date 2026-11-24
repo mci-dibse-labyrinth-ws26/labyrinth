@@ -29,9 +29,9 @@ public record Board(
      * @throws IllegalArgumentException if the board is invalid
      */
     public Board {
-        if (!validSize(rows) || !validSize(cols)) {
-            throw new IllegalArgumentException(
-                "Board dimensions must be odd and between 3 and 15");
+        if (!GameConfig.isValidBoardSize(rows) || !GameConfig.isValidBoardSize(cols)) {
+            throw new IllegalArgumentException("Board dimensions must be odd and between "
+                + GameConfig.MIN_BOARD_SIZE + " and " + GameConfig.MAX_BOARD_SIZE);
         }
 
         Objects.requireNonNull(tiles, "Tiles must not be null");
@@ -56,16 +56,6 @@ public record Board(
         }
 
         tiles = copy;
-    }
-
-    /**
-     * Checks whether a board dimension is valid.
-     *
-     * @param size the dimension to validate
-     * @return true if the dimension is valid
-     */
-    private static boolean validSize(int size) {
-        return size >= 3 && size <= 15 && size % 2 == 1;
     }
 
     /**
