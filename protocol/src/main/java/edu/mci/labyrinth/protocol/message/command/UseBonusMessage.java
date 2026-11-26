@@ -2,6 +2,7 @@ package edu.mci.labyrinth.protocol.message.command;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import edu.mci.labyrinth.protocol.message.Message;
@@ -13,10 +14,23 @@ import edu.mci.labyrinth.protocol.model.Direction;
  * @param data bonus-specific payload
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record UseBonusMessage(Data data) implements Message {
+public record UseBonusMessage(
+    @JsonProperty(value = "data", required = true)
+    Data data
+) implements Message {
 
     /**
-     * A bonus payload identified by its bonusType field.
+     * Validates the message payload.
+     * @throws IllegalArgumentException if data is null
+     */
+    public UseBonusMessage {
+        if (data == null) {
+            throw new IllegalArgumentException("data must not be null");
+        }
+    }
+
+    /**
+     * A bonus payload identified by its required bonusType field.
      */
     @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -38,7 +52,20 @@ public record UseBonusMessage(Data data) implements Message {
      * @param params teleport parameters
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record BeamData(BeamParams params) implements Data {
+    public record BeamData(
+        @JsonProperty(value = "params", required = true)
+        BeamParams params
+    ) implements Data {
+
+        /**
+         * Validates the teleport payload.
+         * @throws IllegalArgumentException if params is null
+         */
+        public BeamData {
+            if (params == null) {
+                throw new IllegalArgumentException("params must not be null");
+            }
+        }
     }
 
     /**
@@ -46,7 +73,22 @@ public record UseBonusMessage(Data data) implements Message {
      * @param targetCoordinates target board position
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record BeamParams(Coordinates targetCoordinates) {
+    public record BeamParams(
+        @JsonProperty(value = "targetCoordinates", required = true)
+        Coordinates targetCoordinates
+    ) {
+
+        /**
+         * Validates the teleport parameters.
+         * @throws IllegalArgumentException if targetCoordinates is null
+         */
+        public BeamParams {
+            if (targetCoordinates == null) {
+                throw new IllegalArgumentException(
+                    "targetCoordinates must not be null"
+                );
+            }
+        }
     }
 
     /**
@@ -54,7 +96,20 @@ public record UseBonusMessage(Data data) implements Message {
      * @param params swap parameters
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record SwapData(SwapParams params) implements Data {
+    public record SwapData(
+        @JsonProperty(value = "params", required = true)
+        SwapParams params
+    ) implements Data {
+
+        /**
+         * Validates the swap payload.
+         * @throws IllegalArgumentException if params is null
+         */
+        public SwapData {
+            if (params == null) {
+                throw new IllegalArgumentException("params must not be null");
+            }
+        }
     }
 
     /**
@@ -62,7 +117,22 @@ public record UseBonusMessage(Data data) implements Message {
      * @param targetPlayerId identifier of the other player
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record SwapParams(String targetPlayerId) {
+    public record SwapParams(
+        @JsonProperty(value = "targetPlayerId", required = true)
+        String targetPlayerId
+    ) {
+
+        /**
+         * Validates the swap parameters.
+         * @throws IllegalArgumentException if targetPlayerId is null
+         */
+        public SwapParams {
+            if (targetPlayerId == null) {
+                throw new IllegalArgumentException(
+                    "targetPlayerId must not be null"
+                );
+            }
+        }
     }
 
     /**
@@ -70,7 +140,20 @@ public record UseBonusMessage(Data data) implements Message {
      * @param params push parameters
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record PushFixedData(PushFixedParams params) implements Data {
+    public record PushFixedData(
+        @JsonProperty(value = "params", required = true)
+        PushFixedParams params
+    ) implements Data {
+
+        /**
+         * Validates the push payload.
+         * @throws IllegalArgumentException if params is null
+         */
+        public PushFixedData {
+            if (params == null) {
+                throw new IllegalArgumentException("params must not be null");
+            }
+        }
     }
 
     /**
@@ -82,20 +165,63 @@ public record UseBonusMessage(Data data) implements Message {
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record PushFixedParams(
+        @JsonProperty(value = "rowIndex", required = true)
         int rowIndex,
+
+        @JsonProperty(value = "columnIndex", required = true)
         int columnIndex,
+
+        @JsonProperty(value = "rotation", required = true)
         int rotation,
+
+        @JsonProperty(value = "direction", required = true)
         Direction direction
     ) {
+
+        /**
+         * Validates the push parameters.
+         * @throws IllegalArgumentException if coordinates are negative, rotation is invalid,or direction is null
+         */
+        public PushFixedParams {
+            if (rowIndex < 0 || columnIndex < 0) {
+                throw new IllegalArgumentException(
+                    "rowIndex and columnIndex must not be negative"
+                );
+            }
+
+            if (rotation < 0 || rotation > 3) {
+                throw new IllegalArgumentException(
+                    "rotation must be between 0 and 3"
+                );
+            }
+
+            if (direction == null) {
+                throw new IllegalArgumentException(
+                    "direction must not be null"
+                );
+            }
+        }
     }
 
     /**
      * The payload for enabling an additional push.
-     *
      * @param params empty parameters
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record PushTwiceData(PushTwiceParams params) implements Data {
+    public record PushTwiceData(
+        @JsonProperty(value = "params", required = true)
+        PushTwiceParams params
+    ) implements Data {
+
+        /**
+         * Validates the additional-push payload.
+         * @throws IllegalArgumentException if params is null
+         */
+        public PushTwiceData {
+            if (params == null) {
+                throw new IllegalArgumentException("params must not be null");
+            }
+        }
     }
 
     /**
@@ -107,6 +233,7 @@ public record UseBonusMessage(Data data) implements Message {
          * Rejects fields because these parameters must be empty.
          * @param name unexpected field name
          * @param value unexpected field value
+         * @throws IllegalArgumentException if a field is provided
          */
         @JsonAnySetter
         public void rejectField(String name, Object value) {

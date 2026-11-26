@@ -1,6 +1,5 @@
 package edu.mci.labyrinth.protocol.codec;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,6 +24,7 @@ public final class MessageCodec {
         mapper = JsonMapper.builder()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
+            .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
             .build();
     }
 
@@ -33,13 +33,18 @@ public final class MessageCodec {
      * @param message message to serialize
      * @return serialized JSON text
      * @throws NullPointerException if the message is null
-     * @throws JsonProcessingException if serialization fails
+     * @throws InvalidMessageException if serialization fails
      */
-    public String encode(Message message) throws JsonProcessingException {
+    public String encode(Message message) throws InvalidMessageException {
         Objects.requireNonNull(message, "message must not be null");
 
-        return mapper.writerFor(Message.class)
-            .writeValueAsString(message);
+        try {
+            return mapper.writerFor(Message.class).writeValueAsString(message);
+        }
+        catch (JsonProcessingException exception)
+        {
+            throw new InvalidMessageException("Message could not be serialized", exception);
+        }
     }
 
     /**
@@ -47,53 +52,54 @@ public final class MessageCodec {
      * @param json JSON text to deserialize
      * @return deserialized message
      * @throws NullPointerException if the JSON text is null
-     * @throws JsonProcessingException if the JSON, envelope or payload is invalid
+     * @throws InvalidMessageException if the JSON, envelope or payload is invalid
      * @throws UnknownMessageTypeException if the message type is unknown
      */
     public Message decode(String json)
-        throws JsonProcessingException, UnknownMessageTypeException {
-
+        throws InvalidMessageException, UnknownMessageTypeException {
         Objects.requireNonNull(json, "json must not be null");
 
-        JsonNode root = mapper.readTree(json);
-
-        if (root == null || !root.isObject()) {
-            throw new JsonParseException(
-                null,
-                "Message must be a JSON object"
-            );
-        }
-
-        JsonNode type = root.get("type");
-        JsonNode data = root.get("data");
-
-        if (type == null
-            || !type.isTextual()
-            || type.asText().isBlank()) {
-            throw new JsonParseException(
-                null,
-                "Message must contain a non-blank string field 'type'"
-            );
-        }
-
-        if (data == null || !data.isObject()) {
-            throw new JsonParseException(
-                null,
-                "Message must contain an object field 'data'"
-            );
-        }
-
         try {
-            return mapper.treeToValue(root, Message.class);
-        } catch (InvalidTypeIdException exception) {
-            if (exception.getBaseType().getRawClass() == Message.class) {
-                throw new UnknownMessageTypeException(
-                    type.asText(),
-                    exception
+            JsonNode root = mapper.readTree(json);
+
+            if (root == null || !root.isObject()) {
+                throw new InvalidMessageException(
+                    "Message must be a JSON object"
                 );
             }
 
-            throw exception;
+            JsonNode type = root.get("type");
+            JsonNode data = root.get("data");
+
+            if (type == null || !type.isTextual() || type.asText().isBlank()) {
+                throw new InvalidMessageException(
+                    "Message must contain a non-blank string field 'type'"
+                );
+            }
+
+            if (data == null || !data.isObject()) {
+                throw new InvalidMessageException(
+                    "Message must contain an object field 'data'"
+                );
+            }
+
+            try {
+                return mapper.treeToValue(root, Message.class);
+            } catch (InvalidTypeIdException exception) {
+                if (exception.getBaseType().getRawClass() == Message.class) {
+                    throw new UnknownMessageTypeException(
+                        type.asText(),
+                        exception
+                    );
+                }
+
+                throw exception;
+            }
+        } catch (JsonProcessingException exception) {
+            throw new InvalidMessageException(
+                "Message could not be deserialized",
+                exception
+            );
         }
     }
 

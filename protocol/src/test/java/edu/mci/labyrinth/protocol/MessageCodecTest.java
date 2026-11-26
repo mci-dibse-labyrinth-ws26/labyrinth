@@ -14,7 +14,12 @@ import edu.mci.labyrinth.protocol.message.command.DisconnectMessage;
 import edu.mci.labyrinth.protocol.message.command.SetAiModeMessage;
 import edu.mci.labyrinth.protocol.message.command.RematchRequestMessage;
 import edu.mci.labyrinth.protocol.message.command.UseBonusMessage;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import edu.mci.labyrinth.protocol.codec.InvalidMessageException;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import edu.mci.labyrinth.protocol.model.Tile;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -70,7 +75,7 @@ class MessageCodecTest {
         """;
 
         assertThrows(
-            JsonProcessingException.class,
+            InvalidMessageException.class,
             () -> codec.decode(json)
         );
     }
@@ -89,6 +94,7 @@ class MessageCodecTest {
     }
 
     @Test
+    @Tag("A-46")
     void ignoresUnknownFields() throws Exception {
         String json = """
             {
@@ -111,6 +117,7 @@ class MessageCodecTest {
     }
 
     @Test
+    @Tag("A-46")
     void reportsUnknownMessageType() {
         String json = """
             {
@@ -165,6 +172,26 @@ class MessageCodecTest {
         assertEquals(
             mapper.readTree(json),
             mapper.readTree(codec.encode(expected))
+        );
+    }
+
+    @Test
+    @Tag("V-01")
+    void rejectsPushTileWithoutRotation() {
+        String json = """
+        {
+          "type": "PUSH_TILE",
+          "data": {
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "direction": "RIGHT"
+          }
+        }
+        """;
+
+        assertThrows(
+            InvalidMessageException.class,
+            () -> codec.decode(json)
         );
     }
 
@@ -469,7 +496,7 @@ class MessageCodecTest {
         """;
 
         assertThrows(
-            JsonProcessingException.class,
+            InvalidMessageException.class,
             () -> codec.decode(json)
         );
     }
@@ -483,7 +510,7 @@ class MessageCodecTest {
         """;
 
         assertThrows(
-            JsonProcessingException.class,
+            InvalidMessageException.class,
             () -> codec.decode(json)
         );
     }
@@ -498,7 +525,7 @@ class MessageCodecTest {
         """;
 
         assertThrows(
-            JsonProcessingException.class,
+            InvalidMessageException.class,
             () -> codec.decode(json)
         );
     }
@@ -513,7 +540,7 @@ class MessageCodecTest {
         """;
 
         assertThrows(
-            JsonProcessingException.class,
+            InvalidMessageException.class,
             () -> codec.decode(json)
         );
     }
@@ -530,7 +557,7 @@ class MessageCodecTest {
         """;
 
         assertThrows(
-            JsonProcessingException.class,
+            InvalidMessageException.class,
             () -> codec.decode(json)
         );
     }
@@ -547,7 +574,7 @@ class MessageCodecTest {
         """;
 
         assertThrows(
-            JsonProcessingException.class,
+            InvalidMessageException.class,
             () -> codec.decode(json)
         );
     }
@@ -567,7 +594,7 @@ class MessageCodecTest {
         """;
 
         assertThrows(
-            JsonProcessingException.class,
+            InvalidMessageException.class,
             () -> codec.decode(json)
         );
     }
@@ -585,8 +612,285 @@ class MessageCodecTest {
         """;
 
         assertThrows(
-            JsonProcessingException.class,
+            InvalidMessageException.class,
             () -> codec.decode(json)
+        );
+    }
+
+    @Test
+    @Tag("V-01")
+    void rejectsMoveFigureWithoutTargetCoordinates() {
+        String json = """
+        {
+          "type": "MOVE_FIGURE",
+          "data": {}
+        }
+        """;
+
+        assertThrows(
+            InvalidMessageException.class,
+            () -> codec.decode(json)
+        );
+    }
+
+    @Test
+    @Tag("V-01")
+    void rejectsMoveFigureWithNullTargetCoordinates() {
+        String json = """
+        {
+          "type": "MOVE_FIGURE",
+          "data": {
+            "targetCoordinates": null
+          }
+        }
+        """;
+
+        assertThrows(
+            InvalidMessageException.class,
+            () -> codec.decode(json)
+        );
+    }
+
+    @Test
+    @Tag("V-01")
+    void rejectsSetAiModeWithoutEnabled() {
+        String json = """
+        {
+          "type": "SET_AI_MODE",
+          "data": {}
+        }
+        """;
+
+        assertThrows(
+            InvalidMessageException.class,
+            () -> codec.decode(json)
+        );
+    }
+
+    @Test
+    @Tag("V-01")
+    void rejectsSetAiModeWithNullEnabled() {
+        String json = """
+        {
+          "type": "SET_AI_MODE",
+          "data": {
+            "enabled": null
+          }
+        }
+        """;
+
+        assertThrows(
+            InvalidMessageException.class,
+            () -> codec.decode(json)
+        );
+    }
+
+    @ParameterizedTest
+    @Tag("V-01")
+    @ValueSource(strings = {
+        // Missing or null readiness.
+        """
+        {"type":"REMATCH_REQUEST","data":{}}
+        """,
+        """
+        {"type":"REMATCH_REQUEST","data":{"ready":null}}
+        """,
+
+        // Missing or null board size.
+        """
+        {"type":"START_GAME","data":{}}
+        """,
+        """
+        {"type":"START_GAME","data":{"boardSize":null}}
+        """,
+
+        // Missing board dimensions.
+        """
+        {"type":"START_GAME","data":{"boardSize":{"cols":7}}}
+        """,
+        """
+        {"type":"START_GAME","data":{"boardSize":{"rows":7}}}
+        """,
+
+        // Null board dimensions.
+        """
+        {"type":"START_GAME","data":{"boardSize":{"rows":null,"cols":7}}}
+        """,
+        """
+        {"type":"START_GAME","data":{"boardSize":{"rows":7,"cols":null}}}
+        """
+    })
+    void rejectsMissingOrNullConfigurationFields(String json) {
+        assertThrows(
+            InvalidMessageException.class,
+            () -> codec.decode(json)
+        );
+    }
+
+    @ParameterizedTest
+    @Tag("V-01")
+    @ValueSource(strings = {
+        // Missing row.
+        """
+        {"type":"MOVE_FIGURE","data":{"targetCoordinates":{"column":2}}}
+        """,
+
+        // Missing column.
+        """
+        {"type":"MOVE_FIGURE","data":{"targetCoordinates":{"row":3}}}
+        """,
+
+        // Null row.
+        """
+        {"type":"MOVE_FIGURE","data":{"targetCoordinates":{"row":null,"column":2}}}
+        """,
+
+        // Null column.
+        """
+        {"type":"MOVE_FIGURE","data":{"targetCoordinates":{"row":3,"column":null}}}
+        """
+    })
+    void rejectsMissingOrNullCoordinateFields(String json) {
+        assertThrows(
+            InvalidMessageException.class,
+            () -> codec.decode(json)
+        );
+    }
+
+    @ParameterizedTest
+    @Tag("V-01")
+    @ValueSource(strings = {
+        // Missing bonus type.
+        """
+        {"type":"USE_BONUS","data":{"params":{}}}
+        """,
+
+        // Missing parameters for each bonus type.
+        """
+        {"type":"USE_BONUS","data":{"bonusType":"BEAM"}}
+        """,
+        """
+        {"type":"USE_BONUS","data":{"bonusType":"SWAP"}}
+        """,
+        """
+        {"type":"USE_BONUS","data":{"bonusType":"PUSH_FIXED"}}
+        """,
+        """
+        {"type":"USE_BONUS","data":{"bonusType":"PUSH_TWICE"}}
+        """,
+
+        // Missing bonus targets.
+        """
+        {"type":"USE_BONUS","data":{"bonusType":"BEAM","params":{}}}
+        """,
+        """
+        {"type":"USE_BONUS","data":{"bonusType":"SWAP","params":{}}}
+        """,
+
+        // Missing individual push parameters.
+        """
+        {"type":"USE_BONUS","data":{"bonusType":"PUSH_FIXED","params":{"columnIndex":2,"rotation":0,"direction":"DOWN"}}}
+        """,
+        """
+        {"type":"USE_BONUS","data":{"bonusType":"PUSH_FIXED","params":{"rowIndex":0,"rotation":0,"direction":"DOWN"}}}
+        """,
+        """
+        {"type":"USE_BONUS","data":{"bonusType":"PUSH_FIXED","params":{"rowIndex":0,"columnIndex":2,"direction":"DOWN"}}}
+        """,
+        """
+        {"type":"USE_BONUS","data":{"bonusType":"PUSH_FIXED","params":{"rowIndex":0,"columnIndex":2,"rotation":0}}}
+        """,
+
+        // Null parameter objects.
+        """
+        {"type":"USE_BONUS","data":{"bonusType":"BEAM","params":null}}
+        """,
+        """
+        {"type":"USE_BONUS","data":{"bonusType":"SWAP","params":null}}
+        """,
+        """
+        {"type":"USE_BONUS","data":{"bonusType":"PUSH_FIXED","params":null}}
+        """,
+        """
+        {"type":"USE_BONUS","data":{"bonusType":"PUSH_TWICE","params":null}}
+        """,
+
+        // Null targets and direction.
+        """
+        {"type":"USE_BONUS","data":{"bonusType":"BEAM","params":{"targetCoordinates":null}}}
+        """,
+        """
+        {"type":"USE_BONUS","data":{"bonusType":"SWAP","params":{"targetPlayerId":null}}}
+        """,
+        """
+        {"type":"USE_BONUS","data":{"bonusType":"PUSH_FIXED","params":{"rowIndex":0,"columnIndex":2,"rotation":0,"direction":null}}}
+        """
+    })
+    void rejectsMissingOrNullBonusFields(String json) {
+        assertThrows(
+            InvalidMessageException.class,
+            () -> codec.decode(json)
+        );
+    }
+
+    @Test
+    @Tag("F-314")
+    void convertsTileWithNullTreasureAndBonusInBothDirections()
+        throws Exception {
+
+        String json = """
+        {
+          "entrances": ["UP", "RIGHT"],
+          "rotation": 1,
+          "treasure": null,
+          "bonus": null,
+          "isFixed": false
+        }
+        """;
+
+        Tile expected = new Tile(
+            List.of(Direction.UP, Direction.RIGHT),
+            1,
+            null,
+            null,
+            false
+        );
+
+        assertEquals(expected, mapper.readValue(json, Tile.class));
+
+        assertEquals(
+            mapper.readTree(json),
+            mapper.readTree(mapper.writeValueAsString(expected))
+        );
+    }
+
+    @ParameterizedTest
+    @Tag("F-314")
+    @ValueSource(strings = {
+        // Missing treasure.
+        """
+        {
+          "entrances": ["UP", "RIGHT"],
+          "rotation": 1,
+          "bonus": null,
+          "isFixed": false
+        }
+        """,
+
+        // Missing bonus.
+        """
+        {
+          "entrances": ["UP", "RIGHT"],
+          "rotation": 1,
+          "treasure": null,
+          "isFixed": false
+        }
+        """
+    })
+    void rejectsTileWithoutRequiredNullableFields(String json) {
+        assertThrows(
+            com.fasterxml.jackson.core.JsonProcessingException.class,
+            () -> mapper.readValue(json, Tile.class)
         );
     }
 }
