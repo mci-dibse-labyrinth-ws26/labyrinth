@@ -4,8 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.cfg.CoercionAction;
+import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.type.LogicalType;
 import edu.mci.labyrinth.protocol.message.Message;
 
 import java.util.Objects;
@@ -18,11 +21,15 @@ public final class MessageCodec {
     private final ObjectMapper mapper;
 
     /**
-     * Creates a codec that ignores unknown object fields.
+     * Creates a codec that ignores unknown fields and requires JSON integers
+     * for integer properties.
      */
     public MessageCodec() {
         mapper = JsonMapper.builder()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .disable(DeserializationFeature.ACCEPT_FLOAT_AS_INT)
+            .withCoercionConfig(LogicalType.Integer, config -> config
+                .setCoercion(CoercionInputShape.String, CoercionAction.Fail))
             .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
             .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
             .build();

@@ -894,4 +894,23 @@ class MessageCodecTest {
             () -> mapper.readValue(json, Tile.class)
         );
     }
+
+    @ParameterizedTest
+    @Tag("V-01")
+    @ValueSource(strings = {
+        // Decimal numbers must not be truncated to integers.
+        """
+        {"type":"PUSH_TILE","data":{"rowIndex":1,"columnIndex":0,"rotation":1.7,"direction":"RIGHT"}}
+        """,
+        // Strings must not be converted to integers.
+        """
+        {"type":"PUSH_TILE","data":{"rowIndex":"1","columnIndex":0,"rotation":1,"direction":"RIGHT"}}
+        """
+    })
+    void rejectsNonIntegerPushValues(String json) {
+        assertThrows(
+            InvalidMessageException.class,
+            () -> codec.decode(json)
+        );
+    }
 }
