@@ -7,6 +7,7 @@ import edu.mci.labyrinth.protocol.message.command.ConnectMessage;
 import edu.mci.labyrinth.protocol.message.command.StartGameMessage;
 import edu.mci.labyrinth.protocol.message.command.PushTileMessage;
 import edu.mci.labyrinth.protocol.model.Direction;
+import edu.mci.labyrinth.protocol.model.Push;
 import edu.mci.labyrinth.protocol.message.command.MoveFigureMessage;
 import edu.mci.labyrinth.protocol.model.Coordinates;
 import edu.mci.labyrinth.protocol.message.command.PassMoveMessage;
@@ -210,7 +211,7 @@ class MessageCodecTest {
         """;
 
         PushTileMessage expected = new PushTileMessage(
-            new PushTileMessage.Data(
+            new Push(
                 1,
                 0,
                 1,
@@ -439,7 +440,7 @@ class MessageCodecTest {
 
         UseBonusMessage expected = new UseBonusMessage(
             new UseBonusMessage.PushFixedData(
-                new UseBonusMessage.PushFixedParams(
+                new Push(
                     0,
                     2,
                     2,

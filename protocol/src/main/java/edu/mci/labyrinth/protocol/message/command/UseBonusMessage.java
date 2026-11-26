@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import edu.mci.labyrinth.protocol.message.Message;
 import edu.mci.labyrinth.protocol.model.Coordinates;
-import edu.mci.labyrinth.protocol.model.Direction;
+import edu.mci.labyrinth.protocol.model.Push;
 
 /**
  * A client command for using a bonus.
@@ -142,7 +142,7 @@ public record UseBonusMessage(
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record PushFixedData(
         @JsonProperty(value = "params", required = true)
-        PushFixedParams params
+        Push params
     ) implements Data {
 
         /**
@@ -152,53 +152,6 @@ public record UseBonusMessage(
         public PushFixedData {
             if (params == null) {
                 throw new IllegalArgumentException("params must not be null");
-            }
-        }
-    }
-
-    /**
-     * The parameters for pushing a normally fixed row or column.
-     * @param rowIndex row of the insertion position
-     * @param columnIndex column of the insertion position
-     * @param rotation absolute clockwise orientation from zero to three
-     * @param direction direction of movement into the board
-     */
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public record PushFixedParams(
-        @JsonProperty(value = "rowIndex", required = true)
-        int rowIndex,
-
-        @JsonProperty(value = "columnIndex", required = true)
-        int columnIndex,
-
-        @JsonProperty(value = "rotation", required = true)
-        int rotation,
-
-        @JsonProperty(value = "direction", required = true)
-        Direction direction
-    ) {
-
-        /**
-         * Validates the push parameters.
-         * @throws IllegalArgumentException if coordinates are negative, rotation is invalid,or direction is null
-         */
-        public PushFixedParams {
-            if (rowIndex < 0 || columnIndex < 0) {
-                throw new IllegalArgumentException(
-                    "rowIndex and columnIndex must not be negative"
-                );
-            }
-
-            if (rotation < 0 || rotation > 3) {
-                throw new IllegalArgumentException(
-                    "rotation must be between 0 and 3"
-                );
-            }
-
-            if (direction == null) {
-                throw new IllegalArgumentException(
-                    "direction must not be null"
-                );
             }
         }
     }
