@@ -356,13 +356,13 @@ Die Mindestwerte aus Testplan 5.1 stehen im jeweiligen Modul im Task
   `JacocoReportBase` in `server/build.gradle.kts`.
 - Die Regel für die Prüfklassen im Server (V-01 bis V-04, V-13, V-14, V-16,
   V-17) folgt, sobald diese Klassen existieren (AIP6-65).
-- **Stand 18.11.2026:** Die Regeln laufen nur bei einem eigenen Aufruf von
-  `jacocoTestCoverageVerification`; `build` scheitert noch nicht daran. Zum
-  Start von Phase 3 werden im Konventions-Plugin die drei auskommentierten
-  Zeilen aktiviert, die die Prüfung an `check` hängen. Vorher muss
-  `jacocoTestCoverageVerification` auf `main` grün sein. Ab dann scheitert jeder
-  Build, der einen Mindestwert unterschreitet, und zwar im Pull Request, der den
-  ungetesteten Code bringt.
+- **Seit 27.11.2026 scharf (AIP6-67):** `jacocoTestCoverageVerification` hängt
+  im Konventions-Plugin an `check`. Damit scheitert `build`, lokal wie in der
+  Pipeline, sobald ein Modul einen Mindestwert unterschreitet, und zwar im
+  Pull Request, der den ungetesteten Code bringt. Neue Klassen im `server`
+  müssen deshalb gleich mit Tests kommen. Zum Zeitpunkt des Scharfschaltens:
+  `core` ca. 92 % Zeilen, `RuleValidator` 100 % Zweige; im `server` wurde noch
+  nichts gemessen, weil `ServerApp` und `ServerWindow` ausgenommen sind.
 
 ### 4.9 Javadoc-Prüfung
 
@@ -436,7 +436,7 @@ etwa für Integrationstests.
 | `.\gradlew.bat build` | alles kompilieren, testen, Javadoc prüfen, paketieren |
 | `.\gradlew.bat build --continue` | wie `build`, zeigt aber die Fehler aller Module auf einmal |
 | `.\gradlew.bat test` | nur Tests, danach Abdeckungsbericht je Modul (4.8) |
-| `.\gradlew.bat jacocoTestCoverageVerification` | Mindestwerte der Testabdeckung prüfen (4.8) |
+| `.\gradlew.bat jacocoTestCoverageVerification` | nur die Mindestwerte der Testabdeckung prüfen; läuft auch in `build` mit (4.8) |
 | `.\gradlew.bat javadoc` | nur Javadoc erzeugen und prüfen |
 | `.\gradlew.bat :server:run` | Spielserver mit Fenster starten |
 | `.\gradlew.bat :server:run --args="--headless"` | Spielserver ohne Fenster starten |
@@ -672,4 +672,5 @@ Git-Tag markiert, damit jederzeit nachvollziehbar ist, was abgegeben wurde.
 | 28.10.2026 | Angleichung an Pflichtenheft v1.2: Projektversion 0.1.0 in `gradle.properties`; JavaFX und Serverfenster im Server, Start ohne Fenster mit `--headless`; Javadoc-Prüfung im Build, Javadoc englisch; `.gitignore` um `logs/` und `server.properties`; Regeln für Javadoc und Anforderungs-IDs in `CONTRIBUTING.md`; PR-Vorlage mit Definition of Done (Abschnitt 4) | Branch `chore/AIP6-18-align-pflichtenheft` |
 | 11.11.2026 | Branch-Schutz für `main` als Ruleset `protect-main`: nur per Pull Request, eine fremde Freigabe, Pflicht-Prüfung `build`, offene Kommentare erledigt, nur Squash; Notausgang für Owner nur über Pull Requests; kein `CODEOWNERS` (Abschnitt 6, ADR 0008) | GitHub-Oberfläche, Branch `docs/AIP6-16-branch-schutz-main` |
 | 18.11.2026 | Testabdeckung mit JaCoCo: Bericht nach jedem Testlauf; Mindestwerte für `core` und `server` laut Testplan 5.1 vorbereitet, scharf ab Phase 3; Pipeline mit `--continue`, Test- und Abdeckungsberichte als Artefakt `testberichte`, `actions/upload-artifact@v7` (Abschnitte 4.8, 5.3, 5.7) | Branch `chore/AIP6-15-testberichte-testabdeckung` |
+| 27.11.2026 | Mindestwerte der Testabdeckung scharf geschaltet: `jacocoTestCoverageVerification` hängt an `check`, `build` scheitert bei Unterschreitung (Abschnitt 4.8) | Branch `chore/AIP6-67-mindestwerte-scharf-schalten` |
 
