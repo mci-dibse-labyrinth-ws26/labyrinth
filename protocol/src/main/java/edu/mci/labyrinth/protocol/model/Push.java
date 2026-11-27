@@ -23,23 +23,10 @@ public record Push(
 ) {
 
     /**
-     * Validates the shared push parameters.
-     * @throws IllegalArgumentException if coordinates are negative,
-     *                                  rotation is invalid, or direction is null
+     * Validates the required direction.
+     * @throws IllegalArgumentException if direction is null
      */
     public Push {
-        if (rowIndex < 0 || columnIndex < 0) {
-            throw new IllegalArgumentException(
-                "rowIndex and columnIndex must not be negative"
-            );
-        }
-
-        if (rotation < 0 || rotation > 3) {
-            throw new IllegalArgumentException(
-                "rotation must be between 0 and 3"
-            );
-        }
-
         if (direction == null) {
             throw new IllegalArgumentException("direction must not be null");
         }
