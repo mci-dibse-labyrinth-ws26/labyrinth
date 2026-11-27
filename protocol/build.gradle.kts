@@ -2,3 +2,7 @@
 plugins {
     id("labyrinth.java-conventions")
 }
+
+dependencies {
+    implementation(libs.jackson.databind)
+}
