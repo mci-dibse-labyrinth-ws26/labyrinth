@@ -1,5 +1,8 @@
 package edu.mci.labyrinth.core;
 
+import java.util.Map;
+import java.util.Objects;
+
 /**
  * Checks of the server's check catalog that belong to the game core (Pflichtenheft 6.5).
  *
@@ -54,6 +57,55 @@ public final class RuleValidator {
             throw new InvalidConfigException("playerCount * treasuresPerPlayer must not exceed "
                     + "rows * cols - 3 = " + treasureTiles + ", was " + totalTreasures);
         }
+    }
+
+    /**
+     * Checks that a figure may move to the target field and returns the steps it takes.
+     *
+     * <p>The target must lie on the board and be reachable over connected tiles (V-08), and no
+     * other figure may stand on it (V-09). Staying on the own field is allowed (A-10), and the
+     * path may pass fields occupied by other figures (A-12). The steps are the length of the
+     * shortest path (A-11).
+     *
+     * @param board the board after the push
+     * @param playerPositions positions of all figures still on the board
+     * @param player the player who moves
+     * @param target the requested target field
+     * @return number of steps from the current field to the target
+     * @throws TargetUnreachableException if the target is outside the board or not reachable
+     * @throws PositionOccupiedException if another figure stands on the target
+     * @throws IllegalArgumentException if {@code player} has no position
+     */
+    public static int validateMoveTarget(Board board, Map<PlayerColor, Position> playerPositions,
+            PlayerColor player, Position target) {
+        Objects.requireNonNull(board, "Board must not be null");
+        Objects.requireNonNull(playerPositions, "Player positions must not be null");
+        Objects.requireNonNull(player, "Player must not be null");
+        Objects.requireNonNull(target, "Target must not be null");
+
+        Position start = playerPositions.get(player);
+        if (start == null) {
+            throw new IllegalArgumentException("Player " + player + " has no position");
+        }
+
+        if (!board.contains(target)) {
+            throw new TargetUnreachableException("Target " + target + " is outside the board");
+        }
+
+        Integer steps = PathFinder.distancesFrom(board, start).get(target);
+        if (steps == null) {
+            throw new TargetUnreachableException(
+                    "Target " + target + " cannot be reached from " + start);
+        }
+
+        for (Map.Entry<PlayerColor, Position> figure : playerPositions.entrySet()) {
+            if (figure.getKey() != player && figure.getValue().equals(target)) {
+                throw new PositionOccupiedException(
+                        "Target " + target + " is occupied by " + figure.getKey());
+            }
+        }
+
+        return steps;
     }
 
     private static void requireValidBoardSize(String name, int size) {
