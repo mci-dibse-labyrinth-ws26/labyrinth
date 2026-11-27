@@ -46,9 +46,9 @@ tasks.jacocoTestReport {
     }
 }
 
-// Ab Phase 3 (23.11.2026) scharf schalten: Dann lässt ein Unterschreiten der
-// Mindestwerte (Testplan 5.1) den Build scheitern (AIP6-15). Vorher prüfen,
-// ob ./gradlew jacocoTestCoverageVerification grün ist.
-// tasks.check {
-//     dependsOn(tasks.jacocoTestCoverageVerification)
-// }
+// Mindestwerte der Testabdeckung (Testplan 5.1, NF-10): Unterschreitet ein
+// Modul einen Wert aus seinem jacocoTestCoverageVerification, scheitert check
+// und damit build (AIP6-67).
+tasks.check {
+    dependsOn(tasks.jacocoTestCoverageVerification)
+}

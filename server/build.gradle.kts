@@ -34,7 +34,7 @@ tasks.withType<JacocoReportBase>().configureEach {
 }
 
 // Mindestwert für die Testabdeckung (Testplan 5.1, NF-10).
-// Noch nicht Teil von check; wird zum Start von Phase 3 scharf geschaltet (AIP6-15).
+// Teil von check: Ein Unterschreiten lässt den Build scheitern (AIP6-67).
 tasks.jacocoTestCoverageVerification {
     violationRules {
         // server gesamt: mindestens 70 % Zeilenabdeckung
