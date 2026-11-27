@@ -1,6 +1,6 @@
 <!--
 Titel im Commit-Format, englisch:  <typ>(<JIRA-KEY>): <was geändert wurde>
-Beispiel:                           feat(AIP6-42): validate tile push on server
+Beispiel:                           feat(AIP6-999): validate tile push on server
 Der Titel wird beim Merge zum Commit auf main. Details: CONTRIBUTING.md
 -->
 
