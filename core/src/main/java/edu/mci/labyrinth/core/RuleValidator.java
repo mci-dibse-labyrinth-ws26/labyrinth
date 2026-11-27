@@ -63,4 +63,68 @@ public final class RuleValidator {
                     + ", was " + size);
         }
     }
+
+    /**
+     * Validates whether a row or column can be pushed (V-05).
+     *
+     * Normal pushes are only allowed on odd indices
+     * inside the board boundaries.
+     *
+     * @param board the current game board
+     * @param index the row or column index to push
+     * @param direction the pushing direction
+     * @throws IllegalArgumentException if the push index is invalid
+     */
+    public static void validatePushIndex(
+        Board board, int index, Direction direction) {
+
+        java.util.Objects.requireNonNull(board, "Board must not be null");
+        java.util.Objects.requireNonNull(direction, "Direction must not be null");
+
+        int size = switch (direction) {
+            case LEFT, RIGHT -> board.rows();
+            case UP, DOWN -> board.cols();
+        };
+
+        if (index <= 0 || index >= size - 1 || index % 2 == 0) {
+            throw new IllegalArgumentException(
+                "Invalid push index: " + index);
+        }
+    }
+
+    /**
+     * Validates that a push does not reverse the previous push (V-06).
+     *
+     * <p>The opposite direction on the same row or column
+     * is forbidden for the next push.</p>
+     *
+     * @param previousPush the previous push, or null if none exists
+     * @param nextPush the proposed push
+     * @throws IllegalArgumentException if the push reverses the previous one
+     * @throws NullPointerException if nextPush is null
+     */
+    public static void validateReversePush(
+        Push previousPush, Push nextPush) {
+
+        java.util.Objects.requireNonNull(
+            nextPush, "Next push must not be null");
+
+        if (previousPush != null && previousPush.isReversedBy(nextPush)) {
+            throw new IllegalArgumentException(
+                "Reversing the previous push is forbidden");
+        }
+    }
+
+    /**
+     * Validates the absolute tile rotation (V-07).
+     *
+     * @param rotation the absolute orientation in clockwise quarter-turns
+     * @throws IllegalArgumentException if rotation is outside 0 to 3
+     */
+    public static void validatePushRotation(int rotation) {
+        if (rotation < 0 || rotation > 3) {
+            throw new IllegalArgumentException(
+                "Push rotation must be between 0 and 3");
+        }
+    }
 }
